@@ -4,6 +4,7 @@ from app.services.news_service import fetch_by_rss, fetch_by_newsapi, save_artic
 from app.services.ai_service import generate_summary, translate_title
 from app.models.article import Article
 import time
+import asyncio
 
 TOPICS = ["ai", "economy", "sports", "culture", "politics", "science", "health", "world", "society", "entertain"]
 
@@ -18,6 +19,11 @@ def collect_all_topics():
             articles = fetch_by_rss(topic)
             save_articles_to_db(articles, db)
             print(f"[RSS] {topic}: 저장 완료")
+
+            # NewsAPI 수집 (하루 100건 제한)
+            api_articles = asyncio.run(fetch_by_newsapi(topic))
+            api_saved = save_articles_to_db(api_articles, db)
+            print(f"[NewsAPI] {topic}: {api_saved}개 저장")
 
         # AI 요약 생성 + 영어 제목 번역 (summary가 null인 기사만)
         unsummarized = db.query(Article).filter(
