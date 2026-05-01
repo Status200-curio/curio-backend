@@ -54,7 +54,7 @@ passlib==1.7.4
 prompt_toolkit==3.0.52
 proto-plus==1.27.1
 protobuf==5.29.6
-psycopg2==2.9.9
+psycopg2-binary==2.9.10
 pyasn1==0.6.3
 pyasn1_modules==0.4.2
 pycparser==3.0
