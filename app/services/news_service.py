@@ -223,7 +223,7 @@ def save_articles_to_db(articles: list, db: Session) -> int:
             source_name=item.get("source_name", ""),
             original_url=item["original_url"],
             topic=item.get("topic", ""),
-            tags=[item.get("topic", "")],
+            tags=tags,
             relevance_score=0.5,
             published_at=item.get("published_at"),
         )
