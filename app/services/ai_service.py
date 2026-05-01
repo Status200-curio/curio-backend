@@ -29,7 +29,7 @@ def _call_gemini(prompt: str, retries: int = 3) -> str:
         except Exception as e:
             print(f"Gemini API 오류 (시도 {attempt + 1}/{retries}): {e}")
             if attempt < retries - 1:
-                time.sleep(15) # 지금 분당 5번만 호출 가능하므로 대기 시간을 늘려 더 생성되도록
+                time.sleep(15)
     return ""
 
 
@@ -60,17 +60,22 @@ def generate_summary(title: str, content: str) -> str:
         return ""
 
 
-def generate_insight(title: str, content: str, user_topics: list) -> str:
+def generate_insight(title: str, content: str, user_topics: list, user_keywords: list = [], user_sub_topics: list = []) -> str:
     """개인화 인사이트 생성 — 유저 관심사 기반, 유저별 다름"""
     if not user_topics:
         return ""
 
     topics_str = ", ".join(user_topics)
+    keywords_str = ", ".join(user_keywords) if user_keywords else ""
+    sub_topics_str = ", ".join(user_sub_topics) if user_sub_topics else ""
     text_input = content[:1500] if content else "내용 없음"
+
+    keyword_line = f"\n관심 키워드: {keywords_str}" if keywords_str else ""
+    sub_topic_line = f"\n세부 관심사: {sub_topics_str}" if sub_topics_str else ""
 
     prompt = f"""당신은 개인화 뉴스 인사이트 전문가입니다.
 
-아래 뉴스 기사를 읽고, 이 독자의 관심사({topics_str})를 가진 사람의 시각에서
+아래 뉴스 기사를 읽고, 이 독자의 관심사({topics_str}){sub_topic_line}{keyword_line}를 가진 사람의 시각에서
 왜 이 기사가 중요한지 분석해주세요.
 
 엄격한 규칙:
@@ -100,6 +105,32 @@ def generate_insight(title: str, content: str, user_topics: list) -> str:
         return ""
 
 
+def translate_title(title: str) -> str:
+    """영어 제목을 한국어로 번역 — 영어가 아니면 그대로 반환"""
+    alpha_count = sum(1 for c in title if c.isascii() and c.isalpha())
+    if len(title) == 0 or alpha_count / len(title) < 0.5:
+        return title
+
+    prompt = f"""다음 영어 제목을 한국어로 자연스럽게 번역해줘.
+반드시 JSON 형식으로만 응답해. 다른 텍스트 없이 JSON만.
+
+제목: {title}
+
+응답 형식:
+{{"title": "한국어 번역 제목"}}"""
+
+    text = _call_gemini(prompt)
+
+    if not text:
+        return title
+
+    try:
+        result = json.loads(text)
+        return result.get("title", title)
+    except json.JSONDecodeError:
+        return title
+
+
 async def chat_stream(article_title: str, article_content: str, messages: list):
     """AI 챗봇 SSE 스트리밍 — 기사 컨텍스트 기반"""
     system_prompt = f"""너는 뉴스 기사 분석 전문가야.
@@ -111,7 +142,6 @@ async def chat_stream(article_title: str, article_content: str, messages: list):
     last_message = messages[-1]["content"] if messages else ""
     full_prompt = f"{system_prompt}\n\n{last_message}"
 
-    # 이전 대화 컨텍스트 포함
     contents = []
     for msg in messages[:-1]:
         contents.append({

@@ -5,6 +5,7 @@ from typing import Optional, List
 class PreferencesRequest(BaseModel):
     topics: Optional[List[str]] = None
     keywords: Optional[List[str]] = None
+    sub_topics: Optional[List[str]] = None  # ["football", "basketball"] 
     digest_frequency: Optional[str] = None  # daily | weekly
     digest_time: Optional[str] = None       # HH:MM
     digest_day: Optional[str] = None        # mon~sun

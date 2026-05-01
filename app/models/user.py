@@ -27,6 +27,8 @@ class UserPreference(Base):
     user_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
     topics = Column(JSON, default=list)             # ["ai", "economy", "sports"]
     keywords = Column(JSON, default=list)           # ["반도체", "ChatGPT"]
+    sub_topics = Column(JSON, default=list)   # ["football", "basketball", "stock"]
+    topic_weights = Column(JSON, default=dict)      # {"ai": 1.3, "economy": 0.8} ← 추가
     digest_frequency = Column(String, default="daily")  # daily | weekly
     digest_time = Column(String, default="08:00")   # HH:MM
     digest_day = Column(String, nullable=True)      # weekly일 때 요일 (mon~sun)

@@ -1,36 +1,38 @@
-from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from dotenv import load_dotenv
 import os
 
 load_dotenv()
 
-SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
-FROM_EMAIL = os.getenv("SENDGRID_FROM_EMAIL")
+GMAIL_USER = os.getenv("GMAIL_USER")
+GMAIL_APP_PASSWORD = os.getenv("GMAIL_APP_PASSWORD")
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
 
 
 def send_newsletter(user_email: str, user_name: str, articles: list):
-    """개인화 뉴스레터 이메일 발송 (SendGrid)"""
+    """개인화 뉴스레터 이메일 발송 (Gmail SMTP)"""
     html_content = build_newsletter_html(user_name, articles)
 
-    message = Mail(
-        from_email=FROM_EMAIL,
-        to_emails=user_email,
-        subject=f"[Curio] {user_name}님의 오늘의 뉴스레터",
-        html_content=html_content
-    )
+    msg = MIMEMultipart("alternative")
+    msg["Subject"] = f"[Curio] {user_name}님의 오늘의 뉴스레터"
+    msg["From"] = GMAIL_USER
+    msg["To"] = user_email
+
+    msg.attach(MIMEText(html_content, "html"))
+
     try:
-        sg = SendGridAPIClient(SENDGRID_API_KEY)
-        sg.send(message)
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+            server.login(GMAIL_USER, GMAIL_APP_PASSWORD)
+            server.sendmail(GMAIL_USER, user_email, msg.as_string())
+            print(f"[뉴스레터] {user_email} 발송 완료")
     except Exception as e:
-        print(f"SendGrid 발송 실패: {e}")
+        print(f"Gmail SMTP 발송 실패: {e}")
 
 
 def build_newsletter_html(user_name: str, articles: list) -> str:
-    """뉴스레터 HTML 본문 생성
-    - 각 기사: 제목 + AI 3줄 요약 + 개인화 인사이트 + Curio 피드 링크
-    """
+    """뉴스레터 HTML 본문 생성"""
     items_html = ""
     for article in articles:
         article_url = f"{FRONTEND_URL}/article/{article['id']}"

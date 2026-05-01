@@ -30,6 +30,7 @@ class ArticleView(Base):
     user_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     article_id = Column(String, ForeignKey("articles.id", ondelete="CASCADE"), nullable=False)
     viewed_at = Column(DateTime(timezone=True), server_default=func.now())
+    duration_seconds = Column(Integer, default=0, nullable=True)  # 최장 체류시간 (초)
 
     __table_args__ = (
         UniqueConstraint("user_id", "article_id", name="uq_user_article_view"),

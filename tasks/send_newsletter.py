@@ -1,10 +1,13 @@
 from tasks.celery_app import app
 from app.database import SessionLocal
-from app.models import User, UserPreference, Article
-from app.services.newsletter_service import send_newsletter, build_newsletter_html
+from app.models.user import User, UserPreference
+from app.models.article import Article, UserArticleInsight
+from app.models.newsletter import NewsletterHistory
+from app.services.newsletter_service import send_newsletter
 from app.services.ai_service import generate_insight
 from datetime import datetime
 import pytz
+import uuid
 
 KST = pytz.timezone("Asia/Seoul")
 
@@ -42,14 +45,38 @@ def dispatch_newsletters():
             if not articles:
                 continue
 
-            # 각 기사에 개인화 인사이트 추가
+            # 각 기사에 개인화 인사이트 추가 (캐시 우선 활용)
             article_dicts = []
             for article in articles:
-                insight = generate_insight(
-                    article.title,
-                    article.content or "",
-                    pref.topics or []
-                )
+                # 캐시된 인사이트 먼저 확인
+                cached = db.query(UserArticleInsight).filter(
+                    UserArticleInsight.user_id == user.id,
+                    UserArticleInsight.article_id == article.id
+                ).first()
+
+                if cached:
+                    # 캐시 있으면 Gemini 호출 없이 바로 사용
+                    insight = cached.insight_text
+                else:
+                    # 캐시 없으면 새로 생성
+                    insight = generate_insight(
+                        article.title,
+                        article.content or "",
+                        pref.topics or [],
+                        pref.keywords or [],
+                        pref.sub_topics or []
+                    )
+                    # 생성된 인사이트 캐시 저장
+                    if insight:
+                        new_insight = UserArticleInsight(
+                            id=str(uuid.uuid4()),
+                            user_id=user.id,
+                            article_id=article.id,
+                            insight_text=insight
+                        )
+                        db.add(new_insight)
+                        db.commit()
+
                 article_dicts.append({
                     "id": article.id,
                     "title": article.title,
@@ -59,6 +86,17 @@ def dispatch_newsletters():
 
             # 이메일 발송
             send_newsletter(user.email, user.name, article_dicts)
+
+            # 발송 기록 저장
+            history = NewsletterHistory(
+                id=str(uuid.uuid4()),
+                user_id=user.id,
+                subject=f"[Curio] {user.name}님의 오늘의 뉴스레터",
+                article_ids=[a["id"] for a in article_dicts]
+            )
+            db.add(history)
+            db.commit()
+            print(f"[뉴스레터] {user.email} 발송 완료")
 
     finally:
         db.close()

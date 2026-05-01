@@ -73,6 +73,10 @@ def register(body: RegisterRequest, db: Session = Depends(get_db)):
 # POST /api/auth/login — 이메일 로그인
 @router.post("/login")
 def login(body: LoginRequest, db: Session = Depends(get_db)):
+    from app.models.user import UserActivityLog
+    from datetime import datetime
+    import pytz
+
     # 유저 조회
     user = get_user_by_email(body.email, db)
     if not user:
@@ -87,6 +91,23 @@ def login(body: LoginRequest, db: Session = Depends(get_db)):
             status_code=401,
             detail={"code": "UNAUTHORIZED", "detail": "이메일 또는 비밀번호가 올바르지 않습니다."}
         )
+
+    # 출석 기록 저장 (하루 1회, 중복 방지)
+    KST = pytz.timezone("Asia/Seoul")
+    today = datetime.now(KST).date()
+    existing_log = db.query(UserActivityLog).filter(
+        UserActivityLog.user_id == user.id,
+        UserActivityLog.activity_date == today
+    ).first()
+
+    if not existing_log:
+        log = UserActivityLog(
+            id=str(uuid.uuid4()),
+            user_id=user.id,
+            activity_date=today
+        )
+        db.add(log)
+        db.commit()
 
     # JWT 토큰 발급
     access_token = create_access_token(user.id)
@@ -106,7 +127,6 @@ def login(body: LoginRequest, db: Session = Depends(get_db)):
             }
         }
     }
-
 
 # POST /api/auth/refresh — 토큰 갱신
 @router.post("/refresh")
@@ -142,11 +162,90 @@ def logout():
     return {"success": True, "message": "로그아웃 되었습니다."}
 
 
-# POST /api/auth/google — Google OAuth (추후 구현)
+# POST /api/auth/google — Google OAuth 로그인
 @router.post("/google")
-def google_login():
-    # TODO: Google OAuth 구현
-    return {"success": False, "message": "준비 중입니다."}
+async def google_login(body: dict, db: Session = Depends(get_db)):
+    import httpx
+    from dotenv import load_dotenv
+    load_dotenv()
+
+    code = body.get("code")
+    if not code:
+        raise HTTPException(status_code=400, detail="code가 필요합니다")
+
+    # code로 access_token 교환
+    async with httpx.AsyncClient() as client:
+        token_response = await client.post(
+            "https://oauth2.googleapis.com/token",
+            data={
+                "code": code,
+                "client_id": os.getenv("GOOGLE_CLIENT_ID"),
+                "client_secret": os.getenv("GOOGLE_CLIENT_SECRET"),
+                "redirect_uri": os.getenv("GOOGLE_REDIRECT_URI"),
+                "grant_type": "authorization_code",
+            }
+        )
+        token_data = token_response.json()
+
+    if "error" in token_data:
+        raise HTTPException(status_code=400, detail="Google 인증 실패")
+
+    # access_token으로 유저 정보 조회
+    async with httpx.AsyncClient() as client:
+        user_response = await client.get(
+            "https://www.googleapis.com/oauth2/v2/userinfo",
+            headers={"Authorization": f"Bearer {token_data['access_token']}"}
+        )
+        google_user = user_response.json()
+
+    email = google_user.get("email")
+    name = google_user.get("name", "")
+    avatar_url = google_user.get("picture", "")
+
+    if not email:
+        raise HTTPException(status_code=400, detail="이메일을 가져올 수 없습니다")
+
+    # 기존 유저 조회 또는 신규 생성
+    user = get_user_by_email(email, db)
+    if not user:
+        user = User(
+            id=str(uuid.uuid4()),
+            email=email,
+            name=name,
+            avatar_url=avatar_url,
+            is_google=True
+        )
+        db.add(user)
+        db.flush()
+
+        preference = UserPreference(
+            user_id=user.id,
+            topics=[],
+            keywords=[],
+            digest_frequency="daily",
+            digest_time="08:00"
+        )
+        db.add(preference)
+        db.commit()
+
+    # JWT 토큰 발급
+    access_token = create_access_token(user.id)
+    refresh_token = create_refresh_token(user.id)
+
+    return {
+        "success": True,
+        "data": {
+            "access_token": access_token,
+            "refresh_token": refresh_token,
+            "token_type": "bearer",
+            "user": {
+                "id": user.id,
+                "email": user.email,
+                "name": user.name,
+                "is_google": user.is_google
+            }
+        }
+    }
 
 
 # POST /api/auth/password/forgot — 비밀번호 재설정 요청

@@ -36,6 +36,7 @@ def get_me(
             "preferences": {
                 "topics": pref.topics if pref else [],
                 "keywords": pref.keywords if pref else [],
+                "sub_topics": pref.sub_topics if pref else [],
                 "digest_frequency": pref.digest_frequency if pref else "daily",
                 "digest_time": pref.digest_time if pref else "08:00",
                 "digest_day": pref.digest_day if pref else None,
@@ -73,6 +74,9 @@ def update_preferences(
     if body.keywords is not None:
         pref.keywords = body.keywords
 
+    if body.sub_topics is not None:  
+        pref.sub_topics = body.sub_topics
+
     if body.digest_frequency is not None:
         pref.digest_frequency = body.digest_frequency
 
@@ -88,6 +92,13 @@ def update_preferences(
     if body.dark_mode is not None:
         pref.dark_mode = body.dark_mode
 
+    # 관심사 변경 시 인사이트 캐시 초기화
+    if body.topics is not None or body.sub_topics is not None or body.keywords is not None:
+        from app.models.article import UserArticleInsight
+        db.query(UserArticleInsight).filter(
+            UserArticleInsight.user_id == current_user.id
+        ).delete()    
+
     db.commit()
 
     return {
@@ -95,6 +106,7 @@ def update_preferences(
         "data": {
             "topics": pref.topics,
             "keywords": pref.keywords,
+            "sub_topics": pref.sub_topics,
             "digest_frequency": pref.digest_frequency,
             "digest_time": pref.digest_time,
             "digest_day": pref.digest_day,
@@ -157,39 +169,53 @@ def get_stats(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    from app.models.user import UserActivityLog
-    from sqlalchemy import func, desc
+    from sqlalchemy import func
+
+    now_kst = datetime.now(KST)
+    today = now_kst.date()
+
+    # 이번 주 월요일 계산
+    monday = today - timedelta(days=today.weekday())
 
     # 총 읽은 기사 수
     total_read = db.query(ArticleView).filter(
         ArticleView.user_id == current_user.id
     ).count()
 
-    # 이번 주 읽은 기사 수
-    week_ago = datetime.utcnow() - timedelta(days=7)
-    weekly_read = db.query(ArticleView).filter(
+    # 오늘 읽은 기사 수
+    today_read = db.query(ArticleView).filter(
         ArticleView.user_id == current_user.id,
-        ArticleView.viewed_at >= week_ago
+        func.date(ArticleView.viewed_at) == today
     ).count()
 
-    # 관심 카테고리 Top 3
-    from app.models.article import Article
-    from sqlalchemy import func
+    # 이번 주 읽은 기사 수
+    weekly_read = db.query(ArticleView).filter(
+        ArticleView.user_id == current_user.id,
+        ArticleView.viewed_at >= datetime(monday.year, monday.month, monday.day, tzinfo=KST)
+    ).count()
 
+    # 관심 카테고리 Top 3 (횟수)
     top_topics_query = db.query(
         Article.topic,
         func.count(ArticleView.id).label("count")
     ).join(
         ArticleView, Article.id == ArticleView.article_id
     ).filter(
-        ArticleView.user_id == current_user.id
+        ArticleView.user_id == current_user.id,
+        Article.topic != None
     ).group_by(
         Article.topic
     ).order_by(
         func.count(ArticleView.id).desc()
     ).limit(3).all()
 
-    top_topics = [t.topic for t in top_topics_query]
+    top_topics = [
+        {
+            "topic": t.topic,
+            "count": t.count,
+        }
+        for t in top_topics_query
+    ]
 
     # 출석 통계
     logs = db.query(UserActivityLog).filter(
@@ -202,7 +228,6 @@ def get_stats(
 
     if logs:
         # 현재 연속 출석
-        today = datetime.now(KST).date()
         streak = 0
         for i, log in enumerate(reversed(logs)):
             expected = today - timedelta(days=i)
@@ -229,6 +254,7 @@ def get_stats(
         "data": {
             "reading": {
                 "total_read": total_read,
+                "today_read": today_read,
                 "weekly_read": weekly_read,
                 "top_topics": top_topics,
             },
