@@ -459,6 +459,10 @@ def get_categories():
                 {"key": "mobile", "label": "모바일"},
                 {"key": "security", "label": "보안"},
                 {"key": "startup", "label": "스타트업"},
+                {"key": "cloud", "label": "클라우드"},
+                {"key": "internet", "label": "인터넷/SNS"},
+                {"key": "ev", "label": "전기차"},
+                {"key": "game_tech", "label": "게임/메타버스"},
             ]
         },
         {
@@ -470,6 +474,9 @@ def get_categories():
                 {"key": "crypto", "label": "가상화폐"},
                 {"key": "finance", "label": "금융"},
                 {"key": "trade", "label": "무역"},
+                {"key": "company", "label": "기업"},
+                {"key": "exchange", "label": "환율"},
+                {"key": "employment", "label": "취업/노동"},
             ]
         },
         {
@@ -482,6 +489,19 @@ def get_categories():
                 {"key": "golf", "label": "골프"},
                 {"key": "esports", "label": "e스포츠"},
                 {"key": "volleyball", "label": "배구"},
+                {"key": "badminton", "label": "배드민턴"},
+                {"key": "tabletennis", "label": "탁구"},
+                {"key": "taekwondo", "label": "태권도"},
+                {"key": "judo", "label": "유도"},
+                {"key": "boxing", "label": "복싱"},
+                {"key": "mma", "label": "종합격투기/MMA"},
+                {"key": "tennis", "label": "테니스"},
+                {"key": "motorsports", "label": "F1/모터스포츠"},
+                {"key": "handball", "label": "핸드볼"},
+                {"key": "ssireum", "label": "씨름"},
+                {"key": "swimming", "label": "수영"},
+                {"key": "fencing", "label": "펜싱"},
+                {"key": "archery", "label": "양궁"},
             ]
         },
         {
@@ -489,8 +509,11 @@ def get_categories():
             "label": "정치",
             "sub_topics": [
                 {"key": "domestic", "label": "국내정치"},
+                {"key": "election", "label": "선거"},
+                {"key": "northkorea", "label": "북한"},
                 {"key": "foreign", "label": "외교"},
                 {"key": "policy", "label": "정책"},
+                {"key": "judiciary", "label": "사법"},
             ]
         },
         {
@@ -498,10 +521,14 @@ def get_categories():
             "label": "건강",
             "sub_topics": [
                 {"key": "disease", "label": "질병"},
-                {"key": "fitness", "label": "운동/헬스"},
+                {"key": "medical", "label": "의료"},
+                {"key": "fitness", "label": "운동"},
                 {"key": "diet", "label": "다이어트"},
                 {"key": "mental", "label": "정신건강"},
-            ]
+                {"key": "beauty", "label": "뷰티"},
+                {"key": "nutrition", "label": "영양"},
+                {"key": "pharma", "label": "제약/바이오"},
+    ]
         },
         {
             "topic": "culture",
@@ -509,17 +536,26 @@ def get_categories():
             "sub_topics": [
                 {"key": "movie", "label": "영화"},
                 {"key": "music", "label": "음악"},
-                {"key": "art", "label": "미술"},
+                {"key": "art", "label": "미술/전시"},
                 {"key": "book", "label": "도서"},
+                {"key": "travel", "label": "여행"},
+                {"key": "food", "label": "음식/맛집"},
+                {"key": "fashion", "label": "패션"},
+                {"key": "game", "label": "게임"},
+                {"key": "performance", "label": "공연"},
             ]
         },
         {
             "topic": "entertain",
             "label": "연예",
             "sub_topics": [
-                {"key": "kpop", "label": "K-POP"},
+                {"key": "kpop", "label": "K-POP/아이돌"},
                 {"key": "drama", "label": "드라마"},
-                {"key": "celebrity", "label": "연예인"},
+                {"key": "movie", "label": "영화"},
+                {"key": "variety", "label": "예능"},
+                {"key": "music", "label": "가요/음악"},
+                {"key": "actor", "label": "배우"},
+                {"key": "overseas", "label": "해외연예"},
             ]
         },
         {
@@ -528,7 +564,12 @@ def get_categories():
             "sub_topics": [
                 {"key": "space", "label": "우주"},
                 {"key": "environment", "label": "환경"},
-                {"key": "biology", "label": "생물"},
+                {"key": "biology", "label": "생명과학"},
+                {"key": "physics", "label": "물리/화학"},
+                {"key": "medicine", "label": "의학/바이오"},
+                {"key": "math", "label": "수학/통계"},
+                {"key": "robot", "label": "로봇/기계"},
+                {"key": "energy", "label": "에너지/신소재"},
             ]
         },
         {
@@ -538,6 +579,12 @@ def get_categories():
                 {"key": "education", "label": "교육"},
                 {"key": "crime", "label": "사건/사고"},
                 {"key": "welfare", "label": "복지"},
+                {"key": "labor", "label": "노동"},
+                {"key": "disaster", "label": "재난/재해"},
+                {"key": "human_rights", "label": "인권"},
+                {"key": "media", "label": "미디어"},
+                {"key": "religion", "label": "종교"},
+                {"key": "local", "label": "지역"},
             ]
         },
         {
@@ -548,6 +595,11 @@ def get_categories():
                 {"key": "china", "label": "중국"},
                 {"key": "japan", "label": "일본"},
                 {"key": "europe", "label": "유럽"},
+                {"key": "middleeast", "label": "중동"},
+                {"key": "asia", "label": "아시아"},
+                {"key": "russia", "label": "러시아"},
+                {"key": "world_economy", "label": "국제경제"},
+                {"key": "world_affairs", "label": "국제정세"},
             ]
         },
     ]
