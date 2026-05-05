@@ -14,7 +14,7 @@ def _call_gemini(prompt: str, retries: int = 3) -> str:
     for attempt in range(retries):
         try:
             response = client.models.generate_content(
-                model="gemini-2.5-flash",
+                model="gemini-3.1-flash-lite",
                 contents=prompt
             )
             text = response.text.strip()
@@ -154,7 +154,7 @@ async def chat_stream(article_title: str, article_content: str, messages: list):
     })
 
     response = client.models.generate_content_stream(
-        model="gemini-2.5-flash",
+        model="gemini-3.1-flash-lite",
         contents=contents
     )
 
