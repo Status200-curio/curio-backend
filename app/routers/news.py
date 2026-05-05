@@ -553,7 +553,7 @@ def get_categories():
                 {"key": "drama", "label": "드라마"},
                 {"key": "movie", "label": "영화"},
                 {"key": "variety", "label": "예능"},
-                {"key": "music", "label": "가요/음악"},
+                {"key": "kmusic", "label": "가요/음악"},
                 {"key": "actor", "label": "배우"},
                 {"key": "overseas", "label": "해외연예"},
             ]
