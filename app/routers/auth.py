@@ -167,6 +167,7 @@ def logout():
 async def google_login(body: dict, db: Session = Depends(get_db)):
     import httpx
     from dotenv import load_dotenv
+    import os
     load_dotenv()
 
     code = body.get("code")
