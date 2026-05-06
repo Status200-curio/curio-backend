@@ -11,6 +11,7 @@ from app.services.recommend_service import update_topic_weights
 from datetime import datetime, timedelta
 import pytz
 import uuid
+from app.models.bookmark import Bookmark, BookmarkTag
 
 router = APIRouter()
 
@@ -372,7 +373,6 @@ def toggle_save(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    from app.models.bookmark import Bookmark
 
     existing = db.query(Bookmark).filter(
         Bookmark.user_id == current_user.id,
@@ -403,7 +403,6 @@ def get_saved(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    from app.models.bookmark import Bookmark
 
     query = db.query(Bookmark).filter(
     Bookmark.user_id == current_user.id
