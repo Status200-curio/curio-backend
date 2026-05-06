@@ -608,3 +608,10 @@ def get_categories():
         "success": True,
         "data": categories
     }
+
+# POST /api/news/admin/collect-now — 수동 뉴스 수집 트리거 (테스트용)
+@router.post("/admin/collect-now")
+def trigger_collect_now():
+    from tasks.collect_news import collect_all_topics
+    collect_all_topics.delay()
+    return {"success": True, "message": "뉴스 수집 태스크가 실행됐습니다."}
