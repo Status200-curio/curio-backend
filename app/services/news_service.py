@@ -270,10 +270,16 @@ async def fetch_by_newsapi(topic: str) -> list:
 def save_articles_to_db(articles: list, db: Session) -> int:
     """수집된 기사를 DB에 저장 — 중복 방지 (original_url UNIQUE)"""
     saved_count = 0
+    seen_urls = set()
 
     for item in articles:
         if not item.get("original_url") or not item.get("title"):
             continue
+
+        url = item["original_url"]
+        if url in seen_urls:  # ← 추가
+            continue
+        seen_urls.add(url)  # ← 추가
 
         exists = db.query(Article).filter(
             Article.original_url == item["original_url"]
