@@ -60,7 +60,7 @@ def generate_summary(title: str, content: str) -> str:
         return ""
 
 
-def generate_insight(title: str, content: str, user_topics: list, user_keywords: list = [], user_sub_topics: list = [], topic: str = "") -> str:
+def generate_insight(title: str, content: str, user_topics: list, user_keywords: list = [], user_sub_topics: list = [], topic: str = "", article_tags: list = []) -> str:
     """개인화 인사이트 생성 — 유저 관심사 기반, 유저별 다름"""
     if not user_topics:
         return ""
@@ -189,7 +189,7 @@ def generate_insight(title: str, content: str, user_topics: list, user_keywords:
         "world":    "글로벌 관심자 시각에서 이 이슈가 한국에 미치는 영향을 알려주세요.",
     }
 
-    # 기사 topic에 맞는 sub_topic만 필터링
+    # 기사 topic에 맞는 sub_topic 중 기사 tags에도 있는 것만 매칭
     topic_sub_mapping = {
         "sports":   ["football", "baseball", "basketball", "golf", "esports",
                      "volleyball", "badminton", "tennis", "mma", "motorsports",
@@ -214,7 +214,12 @@ def generate_insight(title: str, content: str, user_topics: list, user_keywords:
     }
 
     valid_subs = topic_sub_mapping.get(topic, [])
-    matched = [st for st in user_sub_topics if st in valid_subs and st in sub_topic_guide]
+
+    # 유저 sub_topics + 기사 tags 교차 매칭
+    matched = [st for st in user_sub_topics
+               if st in valid_subs
+               and st in sub_topic_guide
+               and st in article_tags]
 
     if matched:
         guide = sub_topic_guide[matched[0]]
