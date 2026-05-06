@@ -33,33 +33,6 @@ def _call_gemini(prompt: str, retries: int = 3) -> str:
     return ""
 
 
-def generate_summary(title: str, content: str) -> str:
-    """기사 3줄 요약 생성 — 모든 유저 공통 캐싱"""
-    text_input = content[:2000] if content else "내용 없음"
-
-    prompt = f"""다음 뉴스 기사를 반드시 한국어로 3줄 이내로 요약해줘.
-영어 기사라도 한국어로 요약해야 해.
-반드시 JSON 형식으로만 응답해. 다른 텍스트 없이 JSON만.
-
-제목: {title}
-내용: {text_input}
-
-응답 형식:
-{{"summary": "3줄 요약 내용"}}"""
-
-    text = _call_gemini(prompt)
-
-    if not text:
-        return ""
-
-    try:
-        result = json.loads(text)
-        return result.get("summary", "")
-    except json.JSONDecodeError:
-        print(f"JSON 파싱 실패: {text[:100]}")
-        return ""
-
-
 def generate_insight(title: str, content: str, user_topics: list, user_keywords: list = [], user_sub_topics: list = [], topic: str = "") -> str:
     """개인화 인사이트 생성 — 유저 관심사 기반, 유저별 다름"""
     if not user_topics:
@@ -175,7 +148,7 @@ def generate_insight(title: str, content: str, user_topics: list, user_keywords:
         "judiciary":  "시민 시각에서 이 사법 이슈가 법치와 사회에 미치는 영향을 알려주세요.",
     }
 
-    # 큰 카테고리 가이드 (sub_topics 없을 때)
+    # 큰 카테고리 가이드
     topic_guide = {
         "economy":  "경제 관심자 시각에서 이 기사가 일상 경제생활에 미치는 영향과 구체적인 액션을 제안해주세요.",
         "sports":   "스포츠팬 시각에서 경기 관전 포인트나 선수/팀 상황을 짚어주세요.",
@@ -189,14 +162,37 @@ def generate_insight(title: str, content: str, user_topics: list, user_keywords:
         "world":    "글로벌 관심자 시각에서 이 이슈가 한국에 미치는 영향을 알려주세요.",
     }
 
-    # 유저 sub_topics 중 기사와 매칭되는 것 우선 적용
-    # 매칭 없으면 큰 카테고리 가이드 적용
-    guide = topic_guide.get(topic, "독자에게 이 기사가 왜 중요한지 핵심을 짚어주세요.")
-    if user_sub_topics:
-        for st in user_sub_topics:
-            if st in sub_topic_guide:
-                guide = sub_topic_guide[st]
-                break
+    # 기사 topic에 맞는 sub_topic만 필터링
+    topic_sub_mapping = {
+        "sports":   ["football", "baseball", "basketball", "golf", "esports",
+                     "volleyball", "badminton", "tennis", "mma", "motorsports",
+                     "swimming", "boxing", "taekwondo", "judo", "fencing", "archery"],
+        "economy":  ["stock", "crypto", "realestate", "finance", "trade",
+                     "company", "exchange", "employment"],
+        "ai":       ["llm", "semiconductor", "mobile", "security", "startup",
+                     "cloud", "internet", "ev", "game_tech"],
+        "entertain":["kpop", "drama", "variety", "actor", "overseas", "kmusic"],
+        "health":   ["disease", "medical", "fitness", "diet", "mental",
+                     "beauty", "nutrition", "pharma"],
+        "culture":  ["movie", "music", "art", "book", "travel", "food",
+                     "fashion", "game", "performance"],
+        "science":  ["space", "environment", "biology", "physics", "medicine",
+                     "math", "robot", "energy"],
+        "society":  ["education", "crime", "welfare", "labor", "disaster",
+                     "human_rights", "media", "religion", "local"],
+        "world":    ["us", "china", "japan", "europe", "middleeast", "asia",
+                     "russia", "world_economy", "world_affairs"],
+        "politics": ["domestic", "election", "northkorea", "foreign",
+                     "policy", "judiciary"],
+    }
+
+    valid_subs = topic_sub_mapping.get(topic, [])
+    matched = [st for st in user_sub_topics if st in valid_subs and st in sub_topic_guide]
+
+    if matched:
+        guide = sub_topic_guide[matched[0]]
+    else:
+        guide = topic_guide.get(topic, "독자에게 이 기사가 왜 중요한지 핵심을 짚어주세요.")
 
     prompt = f"""당신은 개인화 뉴스 인사이트 전문가입니다.
 
