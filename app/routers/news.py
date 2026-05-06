@@ -137,7 +137,8 @@ def get_feed(
                         article.content or "",
                         user_topics,
                         user_keywords,
-                        user_sub_topics
+                        user_sub_topics,
+                        article.topic
                     )
                     if insight_text:
                         new_insight = UserArticleInsight(

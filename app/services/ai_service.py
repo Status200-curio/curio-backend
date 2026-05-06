@@ -60,7 +60,7 @@ def generate_summary(title: str, content: str) -> str:
         return ""
 
 
-def generate_insight(title: str, content: str, user_topics: list, user_keywords: list = [], user_sub_topics: list = []) -> str:
+def generate_insight(title: str, content: str, user_topics: list, user_keywords: list = [], user_sub_topics: list = [], topic: str = "") -> str:
     """개인화 인사이트 생성 — 유저 관심사 기반, 유저별 다름"""
     if not user_topics:
         return ""
@@ -73,22 +73,40 @@ def generate_insight(title: str, content: str, user_topics: list, user_keywords:
     keyword_line = f"\n관심 키워드: {keywords_str}" if keywords_str else ""
     sub_topic_line = f"\n세부 관심사: {sub_topics_str}" if sub_topics_str else ""
 
+    # 카테고리별 인사이트 방향
+    topic_guide = {
+        "economy": "투자자 시각에서 포트폴리오나 재테크에 미치는 영향과 구체적인 액션을 제안해주세요.",
+        "sports": "팬 시각에서 경기 관전 포인트나 선수/팀 상황을 짚어주세요.",
+        "ai": "기술 트렌드를 파악하는 사람 시각에서 이 기술이 가져올 변화나 주목할 포인트를 알려주세요.",
+        "entertain": "팬 시각에서 놓치면 안 될 포인트나 관련 콘텐츠를 추천해주세요.",
+        "health": "개인 건강 관리 시각에서 실생활에 적용할 수 있는 구체적인 행동을 제안해주세요.",
+        "politics": "시민 시각에서 이 정책이나 이슈가 일상생활에 미치는 직접적인 영향을 설명해주세요.",
+        "science": "일반인 시각에서 이 과학적 발견이 미래에 어떤 변화를 가져올지 알려주세요.",
+        "culture": "문화 소비자 시각에서 꼭 경험해봐야 할 이유나 추천 포인트를 알려주세요.",
+        "society": "시민 시각에서 이 사회 이슈가 내 삶과 어떻게 연결되는지 설명해주세요.",
+        "world": "글로벌 트렌드를 파악하는 시각에서 한국에 미치는 영향이나 주목할 포인트를 알려주세요.",
+    }
+
+    guide = topic_guide.get(topic, "독자에게 이 기사가 왜 중요한지 핵심을 짚어주세요.")
+
     prompt = f"""당신은 개인화 뉴스 인사이트 전문가입니다.
 
-아래 뉴스 기사를 읽고, 이 독자에게 왜 이 기사가 중요한지 핵심만 짚어주세요.
+아래 뉴스 기사를 읽고, 독자에게 실질적으로 도움이 되는 인사이트를 제공해주세요.
 
 독자 정보:
 - 관심 카테고리: {topics_str}{sub_topic_line}{keyword_line}
 
+인사이트 방향:
+{guide}
+
 엄격한 규칙:
 1. 반드시 1~2문장으로만 작성 (절대 초과 금지)
 2. 기사 내용과 직접 관련된 인사이트만 작성
-3. 관심 키워드를 억지로 끼워넣지 말 것 (기사와 자연스럽게 연결될 때만 언급)
-4. "~관점에서", "~분야에서" 같은 표현 사용 금지
+3. 관심 키워드를 억지로 끼워넣지 말 것
+4. "~해보세요", "~주목하세요", "~확인해보세요" 같은 액션 중심으로 작성
 5. 독자에게 직접 말하듯 자연스럽게 작성
-6. 기사의 핵심 의미나 독자에게 미치는 영향을 중심으로 작성
-7. 반드시 한국어로 작성
-8. 반드시 JSON 형식으로만 응답 (다른 텍스트 절대 금지)
+6. 반드시 한국어로 작성
+7. 반드시 JSON 형식으로만 응답 (다른 텍스트 절대 금지)
 
 제목: {title}
 내용: {text_input}
