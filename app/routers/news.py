@@ -51,6 +51,9 @@ def get_feed(
     if topics_filter:
         query = query.filter(Article.topic.in_(topics_filter))
 
+     # 요약 없는 기사 제외 ← 여기 추가
+    query = query.filter(Article.ai_summary != None)
+
     # 24시간 이내 읽은 기사 제외
     since_24h = datetime.now(KST) - timedelta(hours=24)
     viewed_24h = db.query(ArticleView.article_id).filter(

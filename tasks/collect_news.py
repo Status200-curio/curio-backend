@@ -3,6 +3,7 @@ from app.database import SessionLocal
 from app.services.news_service import fetch_by_rss, fetch_by_newsapi, save_articles_to_db
 from app.services.ai_service import generate_summary, translate_title
 from app.models.article import Article
+from datetime import datetime, timedelta
 import time
 import asyncio
 
@@ -25,9 +26,11 @@ def collect_all_topics():
             api_saved = save_articles_to_db(api_articles, db)
             print(f"[NewsAPI] {topic}: {api_saved}개 저장")
 
-        # AI 요약 생성 + 영어 제목 번역 (summary가 null인 기사만)
+        # AI 요약 생성 + 영어 제목 번역 (48시간 이내 기사만)
+        two_days_ago = datetime.utcnow() - timedelta(hours=48)
         unsummarized = db.query(Article).filter(
-            Article.ai_summary == None
+            Article.ai_summary == None,
+            Article.published_at >= two_days_ago
         ).limit(20).all()
 
         for article in unsummarized:
