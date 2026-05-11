@@ -295,6 +295,13 @@ async def chat_stream(article_title: str, article_content: str, messages: list):
     system_prompt = f"""너는 뉴스 기사 분석 전문가야.
 아래 기사를 바탕으로 사용자의 질문에 친절하고 명확하게 한국어로 답변해줘.
 
+답변 규칙:
+1. 인사말, 자기소개, 맺음말 금지 ("안녕하세요", "궁금한 점이 있으시면" 등)
+2. 기사 내용에 없는 사실은 답변하지 말 것
+3. 핵심만 간결하게
+4. 필요시 번호 목록 또는 줄바꿈 활용
+5. 기사와 무관한 질문이면 "이 기사와 관련된 질문만 답변할 수 있습니다"라고 안내
+
 기사 제목: {article_title}
 기사 내용: {article_content[:2000] if article_content else "내용 없음"}"""
 
