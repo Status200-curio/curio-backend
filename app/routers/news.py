@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, Query, HTTPException
+from fastapi.responses import StreamingResponse
 from sqlalchemy import case
 from sqlalchemy.orm import Session
 from typing import Optional
@@ -11,6 +12,10 @@ from app.services.recommend_service import update_topic_weights
 from datetime import datetime, timedelta
 import pytz
 import uuid
+import requests
+import base64
+import io
+import os
 from app.models.bookmark import Bookmark, BookmarkTag
 
 router = APIRouter()
@@ -619,3 +624,60 @@ def trigger_collect_now():
     from tasks.collect_news import collect_all_topics
     collect_all_topics.delay()
     return {"success": True, "message": "뉴스 수집 태스크가 실행됐습니다."}
+
+# GET /api/news/{article_id}/audio — AI 요약 오디오 브리핑
+@router.get("/{article_id}/audio")
+def get_audio_briefing(
+    article_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    article = db.query(Article).filter(Article.id == article_id).first()
+    if not article:
+        raise HTTPException(status_code=404, detail="기사를 찾을 수 없습니다")
+
+    if not article.ai_summary:
+        raise HTTPException(status_code=404, detail="요약이 아직 생성되지 않았습니다")
+
+    # 캐시된 오디오 있으면 바로 반환
+    if article.audio_briefing:
+        audio_content = base64.b64decode(article.audio_briefing)
+        return StreamingResponse(
+            io.BytesIO(audio_content),
+            media_type="audio/mpeg",
+            headers={"Content-Disposition": f"inline; filename=briefing_{article_id}.mp3"}
+        )
+
+    # 없으면 TTS 생성
+    api_key = os.getenv("GOOGLE_TTS_API_KEY")
+    url = f"https://texttospeech.googleapis.com/v1/text:synthesize?key={api_key}"
+
+    payload = {
+        "input": {"text": article.ai_summary},
+        "voice": {
+            "languageCode": "ko-KR",
+            "name": "ko-KR-Wavenet-D"
+        },
+        "audioConfig": {
+            "audioEncoding": "MP3",
+            "speakingRate": 1.0,
+            "pitch": 0.0
+        }
+    }
+
+    response = requests.post(url, json=payload)
+    if response.status_code != 200:
+        raise HTTPException(status_code=500, detail="오디오 생성 실패")
+
+    audio_base64 = response.json()["audioContent"]
+
+    # DB에 캐싱
+    article.audio_briefing = audio_base64
+    db.commit()
+
+    audio_content = base64.b64decode(audio_base64)
+    return StreamingResponse(
+        io.BytesIO(audio_content),
+        media_type="audio/mpeg",
+        headers={"Content-Disposition": f"inline; filename=briefing_{article_id}.mp3"}
+    )
