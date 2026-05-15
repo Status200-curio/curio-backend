@@ -219,6 +219,12 @@ def fetch_by_rss(topic: str) -> list:
         try:
             feed = feedparser.parse(feed_url)
             for entry in feed.entries:
+                # 썸네일 추출 ← 여기에 추가
+                thumbnail = None
+                if hasattr(entry, "media_thumbnail") and entry.media_thumbnail:
+                    thumbnail = entry.media_thumbnail[0].get("url", None)
+                elif hasattr(entry, "media_content") and entry.media_content:
+                    thumbnail = entry.media_content[0].get("url", None)
                 articles.append({
                     "title": entry.get("title", ""),
                     "content": entry.get("summary", ""),
@@ -226,6 +232,7 @@ def fetch_by_rss(topic: str) -> list:
                     "source_name": feed.feed.get("title", ""),
                     "topic": topic,
                     "published_at": _parse_date(entry.get("published", "")),
+                    "thumbnail_url": thumbnail,
                 })
         except Exception as e:
             print(f"RSS 수집 실패 ({feed_url}): {e}")
@@ -262,6 +269,7 @@ async def fetch_by_newsapi(topic: str) -> list:
                 "source_name": item.get("source", {}).get("name", ""),
                 "topic": topic,
                 "published_at": _parse_date(item.get("publishedAt", "")),
+                "thumbnail_url": item.get("urlToImage", None),
             })
 
         return articles
@@ -302,6 +310,7 @@ def save_articles_to_db(articles: list, db: Session) -> int:
             tags=tags,
             relevance_score=0.5,
             published_at=item.get("published_at"),
+            thumbnail_url=item.get("thumbnail_url", None),
         )
         db.add(article)
         saved_count += 1

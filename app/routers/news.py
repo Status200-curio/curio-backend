@@ -166,6 +166,7 @@ def get_feed(
             "title": article.title,
             "summary": article.ai_summary,
             "insight": insight_text,
+            "thumbnail_url": article.thumbnail_url, 
             "source_name": article.source_name,
             "original_url": article.original_url,
             "topic": article.topic,

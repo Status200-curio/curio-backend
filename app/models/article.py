@@ -13,6 +13,7 @@ class Article(Base):
     content = Column(String, nullable=True)
     ai_summary = Column(String, nullable=True)          # Claude 3줄 요약 (공통 캐싱)
     audio_briefing = Column(String, nullable=True)      # ← 추가 (base64 MP3 캐싱)
+    thumbnail_url = Column(String, nullable=True)
     source_name = Column(String, nullable=True)
     original_url = Column(String, unique=True, nullable=False)  # 중복 수집 방지
     topic = Column(String, nullable=True, index=True)   # ai | economy | sports ...
