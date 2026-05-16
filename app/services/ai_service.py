@@ -311,7 +311,7 @@ async def chat_stream(article_title: str, article_content: str, messages: list):
     contents = []
     for msg in messages[:-1]:
         contents.append({
-            "role": msg["role"],
+            "role": "model" if msg["role"] == "assistant" else "user",
             "parts": [{"text": msg["content"]}]
         })
     contents.append({
