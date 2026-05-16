@@ -264,7 +264,7 @@ def fetch_by_rss(topic: str) -> list:
                 timeout=10,
                 follow_redirects=True
             )
-            feed = feedparser.parse(feed_url)
+            feed = feedparser.parse(response.text)
 
             for entry in feed.entries:
                 # 썸네일 추출 ← 여기에 추가
