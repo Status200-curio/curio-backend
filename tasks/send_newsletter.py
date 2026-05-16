@@ -64,7 +64,9 @@ def dispatch_newsletters():
                         article.content or "",
                         pref.topics or [],
                         pref.keywords or [],
-                        pref.sub_topics or []
+                        pref.sub_topics or [],
+                        article.topic,
+                        article.tags or []
                     )
                     # 생성된 인사이트 캐시 저장
                     if insight:
