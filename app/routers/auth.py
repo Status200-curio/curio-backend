@@ -2,6 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 import uuid
 
+from app.models.user import UserActivityLog
+import pytz
+from datetime import datetime
+
 from app.database import get_db
 from app.models.user import User, UserPreference
 from app.schemas.auth import (
@@ -227,6 +231,23 @@ async def google_login(body: dict, db: Session = Depends(get_db)):
             digest_time="08:00"
         )
         db.add(preference)
+        db.commit()
+
+        # 출석 기록 저장 (하루 1회, 중복 방지)
+    KST = pytz.timezone("Asia/Seoul")
+    today = datetime.now(KST).date()
+    existing_log = db.query(UserActivityLog).filter(
+        UserActivityLog.user_id == user.id,
+        UserActivityLog.activity_date == today
+    ).first()
+
+    if not existing_log:
+        log = UserActivityLog(
+            id=str(uuid.uuid4()),
+            user_id=user.id,
+            activity_date=today
+        )
+        db.add(log)
         db.commit()
 
     # JWT 토큰 발급
