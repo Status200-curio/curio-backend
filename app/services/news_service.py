@@ -252,10 +252,19 @@ def fetch_by_rss(topic: str) -> list:
     if not feed_urls:
         return []
 
+    headers = {"User-Agent": "Mozilla/5.0 (compatible; CurioBot/1.0)"}
     articles = []
+
     for feed_url in feed_urls:
         try:
+            response = httpx.get(
+                feed_url,
+                headers=headers,
+                timeout=10,
+                follow_redirects=True
+            )
             feed = feedparser.parse(feed_url)
+
             for entry in feed.entries:
                 # 썸네일 추출 ← 여기에 추가
                 thumbnail = None
@@ -263,6 +272,7 @@ def fetch_by_rss(topic: str) -> list:
                     thumbnail = entry.media_thumbnail[0].get("url", None)
                 elif hasattr(entry, "media_content") and entry.media_content:
                     thumbnail = entry.media_content[0].get("url", None)
+                    
                 articles.append({
                     "title": clean_html(entry.get("title", "")), 
                     "content": clean_html(entry.get("summary", "")),
