@@ -3,12 +3,15 @@ import feedparser
 from sqlalchemy.orm import Session
 from dotenv import load_dotenv
 from datetime import datetime
+from bs4 import BeautifulSoup
+import logging
 import os
 import uuid
 
 from app.models.article import Article
 
 load_dotenv()
+logger = logging.getLogger(__name__)
 
 NEWS_API_KEY = os.getenv("NEWS_API_KEY")
 
@@ -226,6 +229,12 @@ SUB_TOPIC_TAGS = {
     "world_affairs": ["국제정세", "외교안보", "분쟁", "전쟁", "국제관계", "핵전쟁", "테러", "난민위기", "UN안보리"],
 }
 
+def clean_html(text: str) -> str:
+    """HTML 태그 제거 후 순수 텍스트 반환"""
+    if not text:
+        return ""
+    return BeautifulSoup(text, "html.parser").get_text(" ", strip=True)
+
 def _get_sub_tags(title: str, content: str) -> list:
     """제목 + 내용 기반으로 세부 태그 자동 추출"""
     text = (title + " " + (content or ""))[:500]
@@ -255,8 +264,8 @@ def fetch_by_rss(topic: str) -> list:
                 elif hasattr(entry, "media_content") and entry.media_content:
                     thumbnail = entry.media_content[0].get("url", None)
                 articles.append({
-                    "title": entry.get("title", ""),
-                    "content": entry.get("summary", ""),
+                    "title": clean_html(entry.get("title", "")), 
+                    "content": clean_html(entry.get("summary", "")),
                     "original_url": entry.get("link", ""),
                     "source_name": feed.feed.get("title", ""),
                     "topic": topic,
@@ -264,7 +273,7 @@ def fetch_by_rss(topic: str) -> list:
                     "thumbnail_url": thumbnail,
                 })
         except Exception as e:
-            print(f"RSS 수집 실패 ({feed_url}): {e}")
+            logger.warning(f"RSS 수집 실패 ({feed_url}): {e}")
             continue
 
     return articles
@@ -292,8 +301,8 @@ async def fetch_by_newsapi(topic: str) -> list:
 
         for item in data.get("articles", []):
             articles.append({
-                "title": item.get("title", ""),
-                "content": item.get("content") or item.get("description", ""),
+                "title": clean_html(item.get("title", "")),   
+                "content": clean_html(item.get("content") or item.get("description", "")),
                 "original_url": item.get("url", ""),
                 "source_name": item.get("source", {}).get("name", ""),
                 "topic": topic,
