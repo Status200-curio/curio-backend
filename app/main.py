@@ -16,7 +16,11 @@ app = FastAPI(
 # CORS 설정
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[os.getenv("FRONTEND_URL", "http://localhost:5173")],
+    allow_origins=[os.getenv("FRONTEND_URL", "http://localhost:5173"),
+        "http://localhost:5173",
+        "http://localhost:3000",
+        "https://choiseik-b7ah55a08-choiseik-s-projects.vercel.app",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
