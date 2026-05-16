@@ -7,6 +7,7 @@ from bs4 import BeautifulSoup
 import logging
 import os
 import uuid
+from dateutil import parser as dateutil_parser
 
 from app.models.article import Article
 
@@ -368,17 +369,10 @@ def save_articles_to_db(articles: list, db: Session) -> int:
 
 
 def _parse_date(date_str: str):
-    """날짜 문자열을 datetime으로 변환"""
+    """날짜 문자열을 datetime으로 변환 (dateutil 사용)"""
     if not date_str:
         return None
-    formats = [
-        "%a, %d %b %Y %H:%M:%S %z",
-        "%Y-%m-%dT%H:%M:%SZ",
-        "%Y-%m-%dT%H:%M:%S%z",
-    ]
-    for fmt in formats:
-        try:
-            return datetime.strptime(date_str, fmt)
-        except ValueError:
-            continue
-    return None
+    try:
+        return dateutil_parser.parse(date_str)
+    except Exception:
+        return None
