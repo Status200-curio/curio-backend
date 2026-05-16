@@ -1,7 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 import uuid
-
+import httpx
+import os
+from fastapi.responses import RedirectResponse
 from app.models.user import UserActivityLog
 import pytz
 from datetime import datetime
@@ -169,9 +171,7 @@ def logout():
 # POST /api/auth/google — Google OAuth 로그인
 @router.post("/google")
 async def google_login(body: dict, db: Session = Depends(get_db)):
-    import httpx
     from dotenv import load_dotenv
-    import os
     load_dotenv()
 
     code = body.get("code")
@@ -282,3 +282,93 @@ def forgot_password(body: ForgotPasswordRequest, db: Session = Depends(get_db)):
 def reset_password(body: ResetPasswordRequest, db: Session = Depends(get_db)):
     # TODO: 토큰 검증 후 비밀번호 변경
     return {"success": True, "message": "비밀번호가 변경되었습니다."}
+
+# GET /api/auth/google/callback — Google OAuth 리다이렉트 콜백
+@router.get("/google/callback")
+async def google_callback(code: str, db: Session = Depends(get_db)):
+    from dotenv import load_dotenv
+    load_dotenv()
+    frontend_url = os.getenv("FRONTEND_URL", "http://localhost:5173")
+
+    # code로 access_token 교환
+    async with httpx.AsyncClient() as client:
+        token_response = await client.post(
+            "https://oauth2.googleapis.com/token",
+            data={
+                "code": code,
+                "client_id": os.getenv("GOOGLE_CLIENT_ID"),
+                "client_secret": os.getenv("GOOGLE_CLIENT_SECRET"),
+                "redirect_uri": os.getenv("GOOGLE_REDIRECT_URI"),
+                "grant_type": "authorization_code",
+            }
+        )
+        token_data = token_response.json()
+
+    # 리다이렉트 방식 
+    if  "error" in token_data:
+        return RedirectResponse(url=f"{frontend_url}/auth/callback?error=google_auth_failed")
+
+    # 유저 정보 조회
+    async with httpx.AsyncClient() as client:
+        user_response = await client.get(
+            "https://www.googleapis.com/oauth2/v2/userinfo",
+            headers={"Authorization": f"Bearer {token_data['access_token']}"}
+        )
+        google_user = user_response.json()
+
+    email = google_user.get("email")
+    name = google_user.get("name", "")
+    avatar_url = google_user.get("picture", "")
+
+    if not email:
+        return RedirectResponse(url=f"{frontend_url}/auth/callback?error=no_email")
+
+    # 기존 유저 조회 또는 신규 생성
+    user = get_user_by_email(email, db)
+    is_new_user = False
+    if not user:
+        is_new_user = True
+        user = User(
+            id=str(uuid.uuid4()),
+            email=email,
+            name=name,
+            avatar_url=avatar_url,
+            is_google=True
+        )
+        db.add(user)
+        db.flush()
+
+        preference = UserPreference(
+            user_id=user.id,
+            topics=[],
+            keywords=[],
+            digest_frequency="daily",
+            digest_time="08:00"
+        )
+        db.add(preference)
+        db.commit()
+
+    # 출석 기록 저장
+    KST = pytz.timezone("Asia/Seoul")
+    today = datetime.now(KST).date()
+    existing_log = db.query(UserActivityLog).filter(
+        UserActivityLog.user_id == user.id,
+        UserActivityLog.activity_date == today
+    ).first()
+
+    if not existing_log:
+        log = UserActivityLog(
+            id=str(uuid.uuid4()),
+            user_id=user.id,
+            activity_date=today
+        )
+        db.add(log)
+        db.commit()
+
+    # JWT 토큰 발급 후 프론트로 리다이렉트
+    access_token = create_access_token(user.id)
+    refresh_token = create_refresh_token(user.id)
+
+    return RedirectResponse(
+        url=f"{frontend_url}/auth/callback?access_token={access_token}&refresh_token={refresh_token}&is_new_user={str(is_new_user).lower()}"
+    )
