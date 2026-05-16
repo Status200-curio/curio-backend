@@ -15,22 +15,39 @@ NEWS_API_KEY = os.getenv("NEWS_API_KEY")
 # 카테고리별 RSS 피드 URL (여러 개)
 RSS_FEEDS = {
     "ai": [
-        "https://techcrunch.com/feed/",
-        "https://rss.etnews.com/Section901.xml",
-        "https://zdnet.co.kr/rss/rss.php",
+        # 국내 IT 전문지
+        "https://rss.etnews.com/Section901.xml",          # 전자신문
+        "https://zdnet.co.kr/rss/rss.php",                # ZDNet Korea
+        "https://www.ddaily.co.kr/rss/all.xml",           # 디지털데일리           
+        "https://www.bloter.net/feed",                    # 블로터
+
+        # 글로벌 테크
+        "https://techcrunch.com/feed/",                   # TechCrunch
+        "https://venturebeat.com/feed/",                  # VentureBeat
+        "https://feeds.arstechnica.com/arstechnica/index", # Ars Technica
+        "https://www.theverge.com/rss/index.xml",         # The Verge
+        "https://feeds.feedburner.com/TheHackersNews",
+
+        # AI 전문
+        "https://openai.com/news/rss.xml",                # OpenAI
+        "https://blog.google/technology/ai/rss/",         # Google AI
+        "https://www.marktechpost.com/feed/",             # MarkTechPost
     ],
     "economy": [
         "https://www.yna.co.kr/rss/economy.xml",
         "https://news.kbs.co.kr/rss/rss_economy.xml",
-        "https://api.sbs.co.kr/xml/news/rss.jsp?pmDiv=economy",
         "https://www.hankyung.com/feed/economy",
         "https://rss.mk.co.kr/rss/30200030.xml",
+        "https://www.edaily.co.kr/rss/rss.asp?code=newsRss",
     ],
     "sports": [
         "https://www.yna.co.kr/rss/sports.xml",
         "https://news.kbs.co.kr/rss/rss_sports.xml",
-        "https://api.sbs.co.kr/xml/news/rss.jsp?pmDiv=sports",
         "https://www.sportschosun.com/rss/sports.xml",
+        "https://www.donga.com/sports/rss",
+        "https://www.spotvnews.co.kr/rss/S1N2.xml",
+        "https://feeds.bbci.co.uk/sport/rss.xml",
+        "https://www.espn.com/espn/rss/news",
     ],
     "culture": [
         "https://www.yna.co.kr/rss/culture.xml",
@@ -41,14 +58,21 @@ RSS_FEEDS = {
         "https://www.yna.co.kr/rss/politics.xml",
         "https://news.kbs.co.kr/rss/rss_politics.xml",
         "https://api.sbs.co.kr/xml/news/rss.jsp?pmDiv=politics",
+        "https://www.hani.co.kr/rss/politics.xml",
+        "https://rss.donga.com/politics.xml",
     ],
     "science": [
         "https://www.sciencedaily.com/rss/top/science.xml",
         "https://www.yna.co.kr/rss/science.xml",
+        "https://feeds.nature.com/nature/rss/current",      # Nature (해외 최고 과학)
+        "https://www.science.org/rss/news_current.xml",     # Science (해외) 
+        "https://www.nasa.gov/rss/dyn/breaking_news.rss", # NASA
     ],
     "health": [
         "https://www.yna.co.kr/rss/health.xml",
         "https://health.chosun.com/site/data/rss/rss.xml",
+        "https://news.sbs.co.kr/news/SectionRssFeed.do?sectionId=08&plink=RSSREADER",
+        "https://kormedi.com/feed/",
     ],
     "world": [
     "https://www.yna.co.kr/rss/international.xml",
@@ -56,16 +80,21 @@ RSS_FEEDS = {
     "https://api.sbs.co.kr/xml/news/rss.jsp?pmDiv=international",
     "https://feeds.bbci.co.uk/news/world/rss.xml",
     "https://feeds.reuters.com/reuters/worldNews",
+    "https://rss.nytimes.com/services/xml/rss/nyt/World.xml",
+    "https://www.aljazeera.com/xml/rss/all.xml",
+    "https://www.theguardian.com/world/rss",
 ],
     "society": [
         "https://www.yna.co.kr/rss/society.xml",
         "https://news.kbs.co.kr/rss/rss_society.xml",
         "https://api.sbs.co.kr/xml/news/rss.jsp?pmDiv=society",
+        "https://www.hani.co.kr/rss/society.xml",
     ],
     "entertain": [
         "https://www.yna.co.kr/rss/entertainment.xml",
         "https://api.sbs.co.kr/xml/news/rss.jsp?pmDiv=entertainment",
         "https://www.sportschosun.com/rss/entertain.xml",
+        "https://tenasia.hankyung.com/feed",
     ],
 }
 
