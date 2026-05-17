@@ -113,15 +113,16 @@ def get_feed(
     if articles:
         article_ids = [a.id for a in articles]
 
-        saved = db.query(ArticleView).filter(
-            ArticleView.user_id == current_user.id,
-            ArticleView.article_id.in_(article_ids)
+    # 북마크 조회 (is_saved)
+        saved = db.query(Bookmark).filter(
+        Bookmark.user_id == current_user.id,
+        Bookmark.article_id.in_(article_ids)
         ).all()
         saved_ids = {s.article_id for s in saved}
 
         feedbacks = db.query(UserArticleInteraction).filter(
-            UserArticleInteraction.user_id == current_user.id,
-            UserArticleInteraction.article_id.in_(article_ids)
+        UserArticleInteraction.user_id == current_user.id,
+        UserArticleInteraction.article_id.in_(article_ids)
         ).all()
         feedback_map = {f.article_id: f.feedback for f in feedbacks}
 
@@ -246,6 +247,7 @@ def search_news(
             "id": article.id,
             "title": article.title,
             "summary": article.ai_summary,
+            "thumbnail_url": article.thumbnail_url,
             "source_name": article.source_name,
             "original_url": article.original_url,
             "topic": article.topic,
