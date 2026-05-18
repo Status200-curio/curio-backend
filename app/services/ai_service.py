@@ -303,7 +303,7 @@ async def chat_stream(article_title: str, article_content: str, messages: list):
 5. 기사와 무관한 질문이면 "이 기사와 관련된 질문만 답변할 수 있습니다"라고 안내
 
 기사 제목: {article_title}
-기사 내용: {article_content[:2000] if article_content else "내용 없음"}"""
+기사 내용: {article_content[:3000] if article_content else "내용 없음"}"""
 
     last_message = messages[-1]["content"] if messages else ""
     full_prompt = f"{system_prompt}\n\n{last_message}"
