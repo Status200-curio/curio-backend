@@ -218,8 +218,7 @@ def generate_insight(title: str, content: str, user_topics: list, user_keywords:
     # 유저 sub_topics + 기사 tags 교차 매칭
     matched = [st for st in user_sub_topics
                if st in valid_subs
-               and st in sub_topic_guide
-               and st in article_tags]
+               and st in sub_topic_guide]
 
     if matched:
         guide = sub_topic_guide[matched[0]]
