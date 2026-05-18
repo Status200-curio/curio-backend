@@ -27,7 +27,7 @@ def _call_gemini(prompt: str, retries: int = 3) -> str:
 
             return text
         except Exception as e:
-            print(f"Gemini API 오류 (시도 {attempt + 1}/{retries}): {e}")
+            logger.warning(f"Gemini API 오류 (시도 {attempt + 1}/{retries}): {e}")
             if attempt < retries - 1:
                 time.sleep(15)
     return ""
@@ -56,7 +56,7 @@ def generate_summary(title: str, content: str) -> str:
         result = json.loads(text)
         return result.get("summary", "")
     except json.JSONDecodeError:
-        print(f"JSON 파싱 실패: {text[:100]}")
+        logger.warning(f"JSON 파싱 실패: {text[:100]}")
         return ""
 
 
