@@ -303,7 +303,7 @@ async def google_callback(code: str, db: Session = Depends(get_db)):
             }
         )
         token_data = token_response.json()
-        print("Google token response:", token_data)  
+    print("Google token response:", token_data)  
 
     # 리다이렉트 방식 
     if  "error" in token_data:
