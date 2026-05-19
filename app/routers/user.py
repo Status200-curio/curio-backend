@@ -162,6 +162,30 @@ def get_history(
         }
     }
 
+# POST /api/user/attendance — 오늘 출석 기록 (중복 방지, 앱 진입 시 호출)
+@router.post("/attendance", status_code=200)
+def record_attendance(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    import uuid as _uuid
+    today = datetime.now(KST).date()
+    existing = db.query(UserActivityLog).filter(
+        UserActivityLog.user_id == current_user.id,
+        UserActivityLog.activity_date == today
+    ).first()
+
+    if not existing:
+        log = UserActivityLog(
+            id=str(_uuid.uuid4()),
+            user_id=current_user.id,
+            activity_date=today
+        )
+        db.add(log)
+        db.commit()
+        return {"success": True, "data": {"recorded": True, "message": "출석 완료"}}
+
+    return {"success": True, "data": {"recorded": False, "message": "이미 오늘 출석했습니다"}}
 
 # GET /api/user/stats — 개인 페이지 대시보드 통계
 @router.get("/stats")
@@ -264,4 +288,183 @@ def get_stats(
                 "max_streak": max_streak,
             }
         }
+    }
+
+# GET /api/user/recommendations — 읽기 기록 기반 연관 주제 추천
+@router.get("/recommendations")
+def get_recommendations(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    from sqlalchemy import func
+    from app.models.article import Article
+
+    # 토픽 친화도 맵 (읽은 주제 → 추천 주제 + 이유)
+    AFFINITY = {
+        "ai":       [("economy", "AI 기업과 테크 경제 흐름이 연결돼 있어요"),
+                     ("science", "AI의 과학적 원리가 흥미로울 거예요")],
+        "economy":  [("ai", "경제를 바꾸는 AI·테크 트렌드예요"),
+                     ("world", "글로벌 경제 동향을 함께 보시면 좋아요")],
+        "sports":   [("health", "스포츠와 건강은 자연스럽게 이어져요"),
+                     ("culture", "스포츠 문화와 엔터테인먼트도 즐기실 수 있어요")],
+        "politics": [("world", "국내 정치와 국제 정세는 맞닿아 있어요"),
+                     ("economy", "정책이 경제에 미치는 영향을 볼 수 있어요")],
+        "health":   [("science", "건강의 과학적 근거가 흥미로울 거예요"),
+                     ("sports", "건강한 삶과 스포츠는 함께예요")],
+        "culture":  [("entertain", "문화와 연예 콘텐츠는 겹치는 부분이 많아요"),
+                     ("society", "문화가 사회에 미치는 영향도 있어요")],
+        "science":  [("ai", "과학과 AI 기술의 연결고리예요"),
+                     ("health", "과학이 건강에 미치는 영향이 있어요")],
+        "world":    [("politics", "국제 정세와 정치는 밀접하게 연결돼요"),
+                     ("economy", "세계 경제 흐름도 함께 보세요")],
+        "society":  [("politics", "사회 문제와 정치 정책이 연결돼요"),
+                     ("health", "사회적 건강 이슈도 함께예요")],
+        "entertain":[("culture", "연예와 문화는 함께 즐길 수 있어요"),
+                     ("society", "연예가 사회에 미치는 영향도 있어요")],
+    }
+    TOPIC_LABELS = {
+        "ai": "AI / 기술", "economy": "경제", "sports": "스포츠",
+        "culture": "문화", "politics": "정치", "science": "과학",
+        "health": "건강", "world": "국제", "society": "사회", "entertain": "연예",
+    }
+    # 읽기 기록 기반 주제별 체류시간 합계 (오래 읽은 순)
+    from app.models.article import ArticleView
+    top_read = db.query(
+        Article.topic,
+        func.count(ArticleView.id).label("cnt"),
+        func.sum(ArticleView.duration_seconds).label("total_sec")
+    ).join(
+        ArticleView, Article.id == ArticleView.article_id
+    ).filter(
+        ArticleView.user_id == current_user.id,
+        ArticleView.duration_seconds > 0
+    ).group_by(Article.topic).order_by(
+        func.sum(ArticleView.duration_seconds).desc()
+    ).limit(3).all()
+
+    def _get_sample_article(rec_topic):
+        article = db.query(Article).filter(
+            Article.topic == rec_topic,
+            Article.ai_summary != None
+        ).order_by(Article.published_at.desc()).first()
+        if not article:
+            article = db.query(Article).filter(
+                Article.topic == rec_topic
+            ).order_by(Article.published_at.desc()).first()
+        return article
+
+    recommendations = []
+    seen_topics = set()
+
+    # 1차: 읽기 기록 기반 추천 (관심사 여부 무관하게 추천)
+    for row in top_read:
+        source_topic = row.topic
+        total_sec = row.total_sec or 0
+        for rec_topic, reason in AFFINITY.get(source_topic, []):
+            if rec_topic in seen_topics:
+                continue
+            article = _get_sample_article(rec_topic)
+            if not article:
+                continue
+
+            mins = total_sec // 60
+            time_str = f"{mins}분" if mins >= 1 else f"{total_sec}초"
+            recommendations.append({
+                "recommended_topic": rec_topic,
+                "recommended_topic_label": TOPIC_LABELS.get(rec_topic, rec_topic),
+                "reason": reason,
+                "based_on_topic": source_topic,
+                "based_on_topic_label": TOPIC_LABELS.get(source_topic, source_topic),
+                "read_time": time_str,
+                "sample_article": {
+                    "id": article.id,
+                    "title": article.title,
+                    "summary": article.ai_summary,
+                    "source_name": article.source_name,
+                    "original_url": article.original_url,
+                    "topic": article.topic,
+                },
+            })
+            seen_topics.add(rec_topic)
+            if len(recommendations) >= 3:
+                break
+        if len(recommendations) >= 3:
+            break
+
+    # 2차: 읽기 기록이 없거나 3개 미만이면 전체 토픽에서 채우기
+    if len(recommendations) < 3:
+        ALL_TOPICS = list(TOPIC_LABELS.keys())
+        for topic in ALL_TOPICS:
+            if topic in seen_topics:
+                continue
+            article = _get_sample_article(topic)
+            if not article:
+                continue
+            recommendations.append({
+                "recommended_topic": topic,
+                "recommended_topic_label": TOPIC_LABELS.get(topic, topic),
+                "reason": "새로운 주제도 한번 둘러보세요",
+                "based_on_topic": topic,
+                "based_on_topic_label": TOPIC_LABELS.get(topic, topic),
+                "read_time": None,
+                "sample_article": {
+                    "id": article.id,
+                    "title": article.title,
+                    "summary": article.ai_summary,
+                    "source_name": article.source_name,
+                    "original_url": article.original_url,
+                    "topic": article.topic,
+                },
+            })
+            seen_topics.add(topic)
+            if len(recommendations) >= 3:
+                break
+
+    return {"success": True, "data": {"recommendations": recommendations}}
+
+
+# GET /api/user/stats/top-reads — 이번 주 체류시간 TOP 3 기사
+@router.get("/stats/top-reads")
+def get_top_reads(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    now_kst = datetime.now(KST)
+    today = now_kst.date()
+    monday = today - timedelta(days=today.weekday())
+    week_start = datetime(monday.year, monday.month, monday.day, tzinfo=KST)
+
+    views = db.query(ArticleView).filter(
+        ArticleView.user_id == current_user.id,
+        ArticleView.viewed_at >= week_start,
+        ArticleView.duration_seconds > 0
+    ).all()
+
+    # article_id별 최장 체류 시간 집계 (같은 기사를 여러 번 읽었을 때 최대값)
+    aggregated = {}
+    for v in views:
+        if v.article_id not in aggregated or v.duration_seconds > aggregated[v.article_id]:
+            aggregated[v.article_id] = v.duration_seconds
+
+    # 내림차순 정렬 후 상위 3개
+    top3 = sorted(aggregated.items(), key=lambda x: x[1], reverse=True)[:3]
+
+    result = []
+    for article_id, duration in top3:
+        article = db.query(Article).filter(Article.id == article_id).first()
+        if article:
+            result.append({
+                "id": article.id,
+                "title": article.title,
+                "source_name": article.source_name,
+                "topic": article.topic,
+                "original_url": article.original_url,
+                "thumbnail_url": article.thumbnail_url,
+                "ai_summary": article.ai_summary,
+                "duration_seconds": duration,
+            })
+
+    return {
+        "success": True,
+        "data": {"top_reads": result}
     }
