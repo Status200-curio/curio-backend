@@ -3,8 +3,11 @@ from dotenv import load_dotenv
 import os
 import json
 import time
+import logging 
 
 load_dotenv()
+
+logger = logging.getLogger(__name__) 
 
 client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 

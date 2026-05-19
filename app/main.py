@@ -20,6 +20,7 @@ app.add_middleware(
         "http://localhost:5173",
         "http://localhost:3000",
         "https://choiseik-b7ah55a08-choiseik-s-projects.vercel.app",
+        "https://choiseik.vercel.app",
     ],
     allow_credentials=True,
     allow_methods=["*"],
