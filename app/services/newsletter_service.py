@@ -23,7 +23,9 @@ def send_newsletter(user_email: str, user_name: str, articles: list):
     msg.attach(MIMEText(html_content, "html"))
 
     try:
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+        with smtplib.SMTP_SSL("smtp.gmail.com", 587) as server:
+            server.ehlo()
+            server.starttls()
             server.login(GMAIL_USER, GMAIL_APP_PASSWORD)
             server.sendmail(GMAIL_USER, user_email, msg.as_string())
             print(f"[뉴스레터] {user_email} 발송 완료")
