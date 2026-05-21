@@ -152,7 +152,6 @@ def dispatch_newsletter(
         raise HTTPException(status_code=403, detail="Invalid dispatch secret")
 
     now_kst = datetime.now(KST)
-    current_hour_str = now_kst.strftime("%H")
     current_day_str = now_kst.strftime("%a").lower()
 
     all_prefs = (
@@ -163,8 +162,8 @@ def dispatch_newsletter(
 
     targets = []
     for pref in all_prefs:
-        digest_hour = (pref.digest_time or "08:00")[:2]
-        if digest_hour != current_hour_str:
+        current_time_str = now_kst.strftime("%H:%M")
+        if pref.digest_time != current_time_str:
             continue
 
         if pref.digest_frequency == "weekly":
