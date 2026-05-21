@@ -87,18 +87,18 @@ def dispatch_newsletters():
                 })
 
             # 이메일 발송
-            send_newsletter(user.email, user.name, article_dicts)
+            #send_newsletter(user.email, user.name, article_dicts)
 
             # 발송 기록 저장
-            history = NewsletterHistory(
-                id=str(uuid.uuid4()),
-                user_id=user.id,
-                subject=f"[Curio] {user.name}님의 오늘의 뉴스레터",
-                article_ids=[a["id"] for a in article_dicts]
-            )
-            db.add(history)
-            db.commit()
-            print(f"[뉴스레터] {user.email} 발송 완료")
+            #history = NewsletterHistory(
+            #   id=str(uuid.uuid4()),
+            #   user_id=user.id,
+            #    subject=f"[Curio] {user.name}님의 오늘의 뉴스레터",
+            #    article_ids=[a["id"] for a in article_dicts]
+            #)
+            #db.add(history)
+            #db.commit()
+            #print(f"[뉴스레터] {user.email} 발송 완료")
 
     finally:
         db.close()

@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 import os
 
-from app.routers import auth, news, bookmark, search, user, chat
+from app.routers import auth, news, bookmark, search, user, chat, newsletter
 
 load_dotenv()
 
@@ -34,6 +34,7 @@ app.include_router(bookmark.router, prefix="/api/news",   tags=["Bookmark"])
 app.include_router(search.router,   prefix="/api/search", tags=["Search"])
 app.include_router(user.router,     prefix="/api/user",   tags=["User"])
 app.include_router(chat.router,     prefix="/api/chat",   tags=["Chat"])
+app.include_router(newsletter.router, prefix="/api/newsletter", tags=["Newsletter"])
 
 
 @app.get("/")
