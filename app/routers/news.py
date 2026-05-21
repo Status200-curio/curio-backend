@@ -17,6 +17,7 @@ import base64
 import io
 import os
 from app.models.bookmark import Bookmark, BookmarkTag
+from app.services.ai_service import generate_tts_script
 
 router = APIRouter()
 
@@ -655,16 +656,22 @@ def get_audio_briefing(
     api_key = os.getenv("GOOGLE_TTS_API_KEY")
     url = f"https://texttospeech.googleapis.com/v1/text:synthesize?key={api_key}"
 
+    tts_script = generate_tts_script(article.title, article.ai_summary or "")
+
     payload = {
-        "input": {"text": article.ai_summary},
-        "voice": {
-            "languageCode": "ko-KR",
-            "name": "ko-KR-Wavenet-D"
-        },
-        "audioConfig": {
-            "audioEncoding": "MP3",
-            "speakingRate": 1.0,
-            "pitch": 0.0
+        "input": {"ssml": f"""<speak>
+        <break time="300ms"/>
+        {tts_script}
+        <break time="500ms"/>
+    </speak>"""},
+    "voice": {
+        "languageCode": "ko-KR",
+        "name": "ko-KR-Wavenet-D"
+    },
+    "audioConfig": {
+        "audioEncoding": "MP3",
+        "speakingRate": 1.0,
+        "pitch": 0.0
         }
     }
 

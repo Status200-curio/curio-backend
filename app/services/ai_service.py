@@ -333,3 +333,24 @@ async def chat_stream(article_title: str, article_content: str, messages: list):
             yield f"data: {chunk.text}\n\n"
 
     yield "data: [DONE]\n\n"
+
+def generate_tts_script(title: str, summary: str) -> str:
+    """뉴스 리포터 스타일 TTS 스크립트 생성"""
+    prompt = f"""다음 뉴스 기사 제목과 요약을 한국 라디오 뉴스 리포터 스타일로 자연스럽게 변환해줘.
+듣기 편하고 귀에 잘 들어오게 작성해줘.
+반드시 JSON으로만 응답해.
+
+제목: {title}
+요약: {summary}
+
+응답 형식:
+{{"script": "리포터 스타일 텍스트"}}"""
+
+    text = _call_gemini(prompt)
+    if not text:
+        return f"다음 소식입니다. {title}. {summary}"
+    try:
+        result = json.loads(text)
+        return result.get("script", f"다음 소식입니다. {title}. {summary}")
+    except json.JSONDecodeError:
+        return f"다음 소식입니다. {title}. {summary}"
