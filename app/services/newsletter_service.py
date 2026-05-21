@@ -23,7 +23,7 @@ def send_newsletter(user_email: str, user_name: str, articles: list):
     msg.attach(MIMEText(html_content, "html"))
 
     try:
-        with smtplib.SMTP_SSL("smtp.gmail.com", 587) as server:
+        with smtplib.SMTP("smtp.gmail.com", 587) as server:
             server.ehlo()
             server.starttls()
             server.login(GMAIL_USER, GMAIL_APP_PASSWORD)
