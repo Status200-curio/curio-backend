@@ -21,9 +21,7 @@ RSS_FEEDS = {
     "ai": [
         # 국내 IT 전문지
         "https://rss.etnews.com/Section901.xml",          # 전자신문
-        "https://zdnet.co.kr/rss/rss.php",                # ZDNet Korea
         "https://www.ddaily.co.kr/rss/all.xml",           # 디지털데일리           
-        "https://www.bloter.net/feed",                    # 블로터
 
         # 글로벌 테크
         "https://techcrunch.com/feed/",                   # TechCrunch
@@ -39,75 +37,94 @@ RSS_FEEDS = {
     ],
     "economy": [
         "https://www.yna.co.kr/rss/economy.xml",
-        "https://news.kbs.co.kr/rss/rss_economy.xml",
         "https://www.hankyung.com/feed/economy",
-        "https://rss.mk.co.kr/rss/30200030.xml",
         "https://www.edaily.co.kr/rss/rss.asp?code=newsRss",
+        "https://www.khan.co.kr/rss/rssdata/economy_news.xml",   # 경향신문
+        "https://www.chosun.com/arc/outboundfeeds/rss/category/economy/?outputType=xml",  # 조선일보
+        "https://www.hani.co.kr/rss/economy/",                  # 한겨레
+        "https://newsis.com/RSS/economy.xml",                    # 뉴시스
+        "https://rss.donga.com/economy.xml",                     # 동아일보
     ],
     "sports": [
         "https://www.yna.co.kr/rss/sports.xml",
-        "https://news.kbs.co.kr/rss/rss_sports.xml",
-        "https://www.sportschosun.com/rss/sports.xml",
         "https://www.donga.com/sports/rss",
         "https://www.spotvnews.co.kr/rss/S1N2.xml",
         "https://feeds.bbci.co.uk/sport/rss.xml",
         "https://www.espn.com/espn/rss/news",
+        "https://www.khan.co.kr/rss/rssdata/kh_sports.xml",      # 경향신문
+        "https://www.chosun.com/arc/outboundfeeds/rss/category/sports/?outputType=xml",  # 조선일보
+        "https://www.hani.co.kr/rss/sports/",                   # 한겨레
+        "https://newsis.com/RSS/sports.xml",                     # 뉴시스
     ],
     "culture": [
         "https://www.yna.co.kr/rss/culture.xml",
-        "https://news.kbs.co.kr/rss/rss_culture.xml",
         "https://api.sbs.co.kr/xml/news/rss.jsp?pmDiv=culture",
+        "https://www.khan.co.kr/rss/rssdata/culture_news.xml",   # 경향신문
+        "https://www.chosun.com/arc/outboundfeeds/rss/category/culture-life/?outputType=xml",  # 조선일보
+        "https://rss.donga.com/culture.xml",                     # 동아일보
     ],
     "politics": [
         "https://www.yna.co.kr/rss/politics.xml",
-        "https://news.kbs.co.kr/rss/rss_politics.xml",
         "https://api.sbs.co.kr/xml/news/rss.jsp?pmDiv=politics",
-        "https://www.hani.co.kr/rss/politics.xml",
         "https://rss.donga.com/politics.xml",
+        "https://www.khan.co.kr/rss/rssdata/politic_news.xml",    # 경향신문
+        "https://www.chosun.com/arc/outboundfeeds/rss/category/politics/?outputType=xml",  # 조선일보
+        "https://www.hani.co.kr/rss/politics/",                  # 한겨레
+        "https://newsis.com/RSS/politics.xml",                   # 뉴시스
     ],
     "science": [
         "https://www.sciencedaily.com/rss/top/science.xml",
-        "https://www.yna.co.kr/rss/science.xml",
         "https://feeds.nature.com/nature/rss/current",      # Nature (해외 최고 과학)
         "https://www.science.org/rss/news_current.xml",     # Science (해외) 
         "https://www.nasa.gov/rss/dyn/breaking_news.rss", # NASA
+        # 추가
+        "https://www.hani.co.kr/rss/science/",                  # 한겨레
+        "https://rss.donga.com/science.xml",                     # 동아일보
     ],
     "health": [
         "https://www.yna.co.kr/rss/health.xml",
         "https://health.chosun.com/site/data/rss/rss.xml",
         "https://news.sbs.co.kr/news/SectionRssFeed.do?sectionId=08&plink=RSSREADER",
         "https://kormedi.com/feed/",
+        "https://rss.donga.com/health.xml",                      # 동아일보
     ],
     "world": [
     "https://www.yna.co.kr/rss/international.xml",
-    "https://news.kbs.co.kr/rss/rss_world.xml",
     "https://api.sbs.co.kr/xml/news/rss.jsp?pmDiv=international",
     "https://feeds.bbci.co.uk/news/world/rss.xml",
-    "https://feeds.reuters.com/reuters/worldNews",
     "https://rss.nytimes.com/services/xml/rss/nyt/World.xml",
     "https://www.aljazeera.com/xml/rss/all.xml",
     "https://www.theguardian.com/world/rss",
+    "https://www.khan.co.kr/rss/rssdata/kh_world.xml",       # 경향신문
+    "https://www.hani.co.kr/rss/international/",             # 한겨레
+    "https://newsis.com/RSS/international.xml",              # 뉴시스
+    "https://rss.donga.com/international.xml",               # 동아일보
 ],
     "society": [
         "https://www.yna.co.kr/rss/society.xml",
-        "https://news.kbs.co.kr/rss/rss_society.xml",
         "https://api.sbs.co.kr/xml/news/rss.jsp?pmDiv=society",
-        "https://www.hani.co.kr/rss/society.xml",
+        "https://www.khan.co.kr/rss/rssdata/society_news.xml",   # 경향신문
+        "https://www.chosun.com/arc/outboundfeeds/rss/category/national/?outputType=xml",  # 조선일보
+        "https://www.hani.co.kr/rss/society/",                  # 한겨레
+        "https://newsis.com/RSS/society.xml",                    # 뉴시스
+        "https://rss.donga.com/national.xml",                    # 동아일보
     ],
     "entertain": [
         "https://www.yna.co.kr/rss/entertainment.xml",
         "https://api.sbs.co.kr/xml/news/rss.jsp?pmDiv=entertainment",
-        "https://www.sportschosun.com/rss/entertain.xml",
         "https://tenasia.hankyung.com/feed",
+        "https://www.khan.co.kr/rss/rssdata/kh_entertainment.xml",  # 경향신문
+        "https://www.chosun.com/arc/outboundfeeds/rss/category/entertainments/?outputType=xml",  # 조선일보
+        "https://newsis.com/RSS/entertain.xml",                  # 뉴시스
     ],
 }
 
 # 카테고리별 NewsAPI 검색 키워드
 NEWS_API_KEYWORDS = {
-    "ai":        "AI OR 인공지능 OR ChatGPT OR 반도체 OR 스타트업 OR 클라우드 OR 빅데이터 OR 사이버보안 OR 메타버스 OR 전기차",
-    "economy":   "경제 OR 주식 OR 금리 OR 부동산 OR 가상화폐 OR 환율 OR 코스피 OR 코스닥 OR 무역 OR 기업 OR 취업 OR 고용",
+    "ai":        "AI OR 인공지능 OR ChatGPT OR 반도체 OR 스타트업 OR 클라우드 OR 빅데이터 OR 사이버보안 OR 메타버스 OR 딥러닝",
+    "economy":   "경제 OR 주식 OR 금리 OR 부동산 OR 가상화폐 OR 환율 OR 코스피 OR 코스닥 OR 무역 OR 기업 OR 취업 OR 고용 OR 전기차",
     "sports":    "스포츠 OR 축구 OR 야구 OR 농구 OR 골프 OR 배드민턴 OR 테니스 OR 배구 OR 수영 OR 태권도 OR e스포츠 OR UFC OR F1",
-    "culture":   "문화 OR 영화 OR 음악 OR 공연 OR 전시 OR 도서 OR 여행 OR 맛집 OR 패션 OR 게임 OR 미술",
+    "culture":   "문화 OR 음악 OR 공연 OR 전시 OR 도서 OR 여행 OR 맛집 OR 패션 OR 게임 OR 미술",
     "politics":  "정치 OR 국회 OR 정부 OR 대통령 OR 선거 OR 외교 OR 북한 OR 정책 OR 여당 OR 야당 OR 검찰 OR 사법",
     "science":   "과학 OR 우주 OR 연구 OR 생명과학 OR 물리 OR 화학 OR 로봇 OR 에너지 OR 기후 OR NASA OR 신소재",
     "health":    "건강 OR 의료 OR 병원 OR 질병 OR 다이어트 OR 운동 OR 정신건강 OR 뷰티 OR 영양 OR 제약 OR 바이오",
