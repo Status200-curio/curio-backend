@@ -38,6 +38,8 @@ def build_newsletter_html(user_name: str, articles: list) -> str:
     items_html = ""
     for article in articles:
         article_url = f"{FRONTEND_URL}/article/{article['id']}"
+        thumbnail = article.get('thumbnail_url', '')
+        thumbnail_html = f'<img src="{thumbnail}" style="width:100%; border-radius:6px; margin-bottom:12px;">' if thumbnail else ''
         items_html += f"""
         <div style="margin-bottom:32px; padding:20px; border:1px solid #eee; border-radius:8px;">
             <h2 style="font-size:18px; margin:0 0 12px;">

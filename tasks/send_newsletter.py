@@ -84,6 +84,7 @@ def dispatch_newsletters():
                     "title": article.title,
                     "summary": article.ai_summary,
                     "insight": insight,
+                    "thumbnail_url": article.thumbnail_url or "",
                 })
 
             # 이메일 발송
