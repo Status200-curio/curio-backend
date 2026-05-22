@@ -32,7 +32,7 @@ def _call_gemini(prompt: str, retries: int = 3) -> str:
         except Exception as e:
             logger.warning(f"Gemini API 오류 (시도 {attempt + 1}/{retries}): {e}")
             if attempt < retries - 1:
-                time.sleep(15)
+                time.sleep(3)
     return ""
 
 
