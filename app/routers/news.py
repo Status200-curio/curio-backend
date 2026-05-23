@@ -70,6 +70,13 @@ def get_feed(
 
     # 정렬
     now = datetime.now(KST)
+
+    topic_weights = dict(pref.topic_weights or {}) if pref else {}
+    weight_boost = case(
+        *[(Article.topic == t, float(w)) for t, w in topic_weights.items()] if topic_weights else [(True, 1.0)],
+        else_=1.0
+    )
+
     if sort == "latest":
         query = query.order_by(Article.published_at.desc())
     elif sort == "relevance":
@@ -243,6 +250,23 @@ def search_news(
     total = query.count()
     articles = query.offset((page - 1) * limit).limit(limit).all()
 
+    article_ids = [a.id for a in articles]
+    saved_ids = set()
+    feedback_map = {}
+
+    if article_ids:
+        saved = db.query(Bookmark).filter(
+            Bookmark.user_id == current_user.id,
+            Bookmark.article_id.in_(article_ids)
+        ).all()
+        saved_ids = {s.article_id for s in saved}
+
+    feedbacks = db.query(UserArticleInteraction).filter(
+        UserArticleInteraction.user_id == current_user.id,
+        UserArticleInteraction.article_id.in_(article_ids)
+    ).all()
+    feedback_map = {f.article_id: f.feedback for f in feedbacks}
+
     result = []
     for article in articles:
         result.append({
@@ -254,6 +278,8 @@ def search_news(
             "original_url": article.original_url,
             "topic": article.topic,
             "published_at": article.published_at.isoformat() if article.published_at else None,
+            "is_saved": article.id in saved_ids,       
+            "user_feedback": feedback_map.get(article.id),
         })
 
     return {
