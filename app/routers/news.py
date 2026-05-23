@@ -252,7 +252,6 @@ def search_news(
 
     article_ids = [a.id for a in articles]
     saved_ids = set()
-    feedback_map = {}
 
     if article_ids:
         saved = db.query(Bookmark).filter(
@@ -260,12 +259,6 @@ def search_news(
             Bookmark.article_id.in_(article_ids)
         ).all()
         saved_ids = {s.article_id for s in saved}
-
-    feedbacks = db.query(UserArticleInteraction).filter(
-        UserArticleInteraction.user_id == current_user.id,
-        UserArticleInteraction.article_id.in_(article_ids)
-    ).all()
-    feedback_map = {f.article_id: f.feedback for f in feedbacks}
 
     result = []
     for article in articles:
@@ -279,7 +272,6 @@ def search_news(
             "topic": article.topic,
             "published_at": article.published_at.isoformat() if article.published_at else None,
             "is_saved": article.id in saved_ids,       
-            "user_feedback": feedback_map.get(article.id),
         })
 
     return {
