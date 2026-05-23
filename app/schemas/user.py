@@ -11,6 +11,7 @@ class PreferencesRequest(BaseModel):
     digest_day: Optional[str] = None        # mon~sun
     ai_summary_depth: Optional[str] = None  # brief | balanced | deep
     dark_mode: Optional[bool] = None
+    custom_insight_prompt: Optional[str] = None
 
 
 class UserStatsResponse(BaseModel):

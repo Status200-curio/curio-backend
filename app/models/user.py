@@ -3,6 +3,7 @@ from sqlalchemy import Column, String, Boolean, DateTime, JSON, ForeignKey, Date
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.database import Base
+from sqlalchemy import Column, String, Boolean, DateTime, JSON, Text
 
 
 class User(Base):
@@ -36,6 +37,7 @@ class UserPreference(Base):
     language = Column(String, default="ko")
     dark_mode = Column(Boolean, default=False)
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    custom_insight_prompt = Column(Text, nullable=True)
 
     user = relationship("User", back_populates="preference")
 

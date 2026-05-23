@@ -150,7 +150,8 @@ def get_feed(
                         user_keywords,
                         user_sub_topics,
                         article.topic,
-                        article.tags or []
+                        article.tags or [],
+                        pref.custom_insight_prompt or ""
                     )
                     if insight_text:
                         new_insight = UserArticleInsight(

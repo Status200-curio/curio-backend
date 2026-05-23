@@ -63,7 +63,7 @@ def generate_summary(title: str, content: str) -> str:
         return ""
 
 
-def generate_insight(title: str, content: str, user_topics: list, user_keywords: list = [], user_sub_topics: list = [], topic: str = "", article_tags: list = []) -> str:
+def generate_insight(title: str, content: str, user_topics: list, user_keywords: list = [], user_sub_topics: list = [], topic: str = "", article_tags: list = [], custom_prompt: str = "") -> str:
     """개인화 인사이트 생성 — 유저 관심사 기반, 유저별 다름"""
     if not user_topics:
         return ""
@@ -223,11 +223,12 @@ def generate_insight(title: str, content: str, user_topics: list, user_keywords:
                if st in valid_subs
                and st in sub_topic_guide]
 
-    if matched:
+    if custom_prompt:
+        guide = custom_prompt
+    elif matched:
         guide = sub_topic_guide[matched[0]]
     else:
         guide = topic_guide.get(topic, "독자에게 이 기사가 왜 중요한지 핵심을 짚어주세요.")
-
     prompt = f"""당신은 개인화 뉴스 인사이트 전문가입니다.
 
 아래 뉴스 기사를 읽고, 독자에게 실질적으로 도움이 되는 인사이트를 제공해주세요.

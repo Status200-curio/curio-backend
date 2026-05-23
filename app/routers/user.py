@@ -42,6 +42,7 @@ def get_me(
                 "digest_day": pref.digest_day if pref else None,
                 "ai_summary_depth": pref.ai_summary_depth if pref else "balanced",
                 "dark_mode": pref.dark_mode if pref else False,
+                "custom_insight_prompt": pref.custom_insight_prompt if pref else None,
             } if pref else None
         }
     }
@@ -92,6 +93,9 @@ def update_preferences(
     if body.dark_mode is not None:
         pref.dark_mode = body.dark_mode
 
+    if body.custom_insight_prompt is not None:
+        pref.custom_insight_prompt = body.custom_insight_prompt
+
     # 관심사 변경 시 인사이트 캐시 초기화
     if body.topics is not None or body.sub_topics is not None or body.keywords is not None:
         from app.models.article import UserArticleInsight
@@ -112,6 +116,7 @@ def update_preferences(
             "digest_day": pref.digest_day,
             "ai_summary_depth": pref.ai_summary_depth,
             "dark_mode": pref.dark_mode,
+            "custom_insight_prompt": pref.custom_insight_prompt,
         }
     }
 
