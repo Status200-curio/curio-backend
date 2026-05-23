@@ -99,12 +99,12 @@ def get_feed(
                 else_=0.0
             )
             query = query.order_by(
-                (Article.relevance_score + freshness_boost + keyword_boost).desc(),
+                ((Article.relevance_score + freshness_boost + keyword_boost) * weight_boost).desc(),
                 Article.published_at.desc()
             )
         else:
             query = query.order_by(
-                (Article.relevance_score + freshness_boost).desc(),
+                ((Article.relevance_score + freshness_boost) * weight_boost).desc(),
                 Article.published_at.desc()
             )
     else:
