@@ -82,7 +82,6 @@ def dispatch_newsletters():
                 article_dicts.append({
                     "id": article.id,
                     "title": article.title,
-                    "summary": article.ai_summary,
                     "insight": insight,
                     "thumbnail_url": article.thumbnail_url or "",
                 })
