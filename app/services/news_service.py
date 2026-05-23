@@ -290,6 +290,11 @@ def fetch_by_rss(topic: str) -> list:
                     thumbnail = entry.media_thumbnail[0].get("url", None)
                 elif hasattr(entry, "media_content") and entry.media_content:
                     thumbnail = entry.media_content[0].get("url", None)
+                elif hasattr(entry, "enclosures") and entry.enclosures:  # ← 추가
+                    for enc in entry.enclosures:
+                        if enc.get("type", "").startswith("image/"):
+                            thumbnail = enc.get("url", None)
+                            break
                     
                 articles.append({
                     "title": clean_html(entry.get("title", "")), 
