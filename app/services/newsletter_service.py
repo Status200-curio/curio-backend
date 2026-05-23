@@ -78,9 +78,6 @@ def build_newsletter_html(user_name: str, articles: list) -> str:
                     {article['title']}
                 </a>
             </h2>
-            <p style="color:#555; font-size:13px; line-height:1.7; margin:0 0 12px;">
-                {article.get('summary', '')}
-            </p>
             {insight_html}
             <a href="{article_url}" style="font-size:13px; color:#4f46e5; font-weight:500;">
                 Curio에서 더 읽기 →
