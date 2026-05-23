@@ -297,10 +297,11 @@ def translate_title(title: str) -> str:
 
 async def chat_stream(article_title: str, article_content: str, messages: list):
     """AI 챗봇 SSE 스트리밍 — 기사 컨텍스트 기반"""
+    clean_title = article_title.replace('"', "'")
     system_prompt = f"""너는 뉴스 기사 해설 전문가야.
 아래 기사를 바탕으로 사용자의 질문에 친절하고 명확하게 한국어로 답변해줘.
 
-기사 제목: {article_title}
+기사 제목: {clean_title}
 기사 내용: {article_content[:3000] if article_content else "내용 없음"}
 
 답변 규칙:
