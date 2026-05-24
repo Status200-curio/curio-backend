@@ -710,3 +710,83 @@ def get_audio_briefing(
         media_type="audio/mpeg",
         headers={"Content-Disposition": f"inline; filename=briefing_{article_id}.mp3"}
     )
+# GET /api/news/{article_id} — 단일 기사 조회
+@router.get("/{article_id}")
+def get_article(
+    article_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    article = db.query(Article).filter(Article.id == article_id).first()
+    if not article:
+        raise HTTPException(status_code=404, detail="기사를 찾을 수 없습니다")
+
+    pref = db.query(UserPreference).filter(
+        UserPreference.user_id == current_user.id
+    ).first()
+    user_topics = pref.topics if pref and pref.topics else []
+    user_keywords = pref.keywords if pref and pref.keywords else []
+    user_sub_topics = pref.sub_topics if pref and pref.sub_topics else []
+
+    # 인사이트 캐시 조회
+    from app.models.article import UserArticleInsight
+    insight_text = None
+    cached = db.query(UserArticleInsight).filter(
+        UserArticleInsight.user_id == current_user.id,
+        UserArticleInsight.article_id == article_id
+    ).first()
+    if cached:
+        insight_text = cached.insight_text
+    elif user_topics:
+        try:
+            from app.services.ai_service import generate_insight
+            insight_text = generate_insight(
+                article.title,
+                article.content or "",
+                user_topics,
+                user_keywords,
+                user_sub_topics,
+                article.topic,
+                article.tags or [],
+                pref.custom_insight_prompt or "" if pref else ""
+            )
+            if insight_text:
+                new_insight = UserArticleInsight(
+                    user_id=current_user.id,
+                    article_id=article.id,
+                    insight_text=insight_text
+                )
+                db.add(new_insight)
+                db.commit()
+        except Exception:
+            insight_text = None
+
+    # 북마크/피드백 조회
+    is_saved = db.query(Bookmark).filter(
+        Bookmark.user_id == current_user.id,
+        Bookmark.article_id == article_id
+    ).first() is not None
+
+    feedback = db.query(UserArticleInteraction).filter(
+        UserArticleInteraction.user_id == current_user.id,
+        UserArticleInteraction.article_id == article_id
+    ).first()
+
+    return {
+        "success": True,
+        "data": {
+            "id": article.id,
+            "title": article.title,
+            "summary": article.ai_summary,
+            "insight": insight_text,
+            "thumbnail_url": article.thumbnail_url,
+            "source_name": article.source_name,
+            "original_url": article.original_url,
+            "topic": article.topic,
+            "tags": article.tags or [],
+            "read_time_minutes": article.read_time_minutes,
+            "published_at": article.published_at.isoformat() if article.published_at else None,
+            "is_saved": is_saved,
+            "user_feedback": feedback.feedback if feedback else None,
+        }
+    }
