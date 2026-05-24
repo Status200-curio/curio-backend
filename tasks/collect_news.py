@@ -28,12 +28,13 @@ def collect_all_topics():
 
         # AI 요약 생성 + 영어 제목 번역 (48시간 이내 기사만)
         two_days_ago = datetime.utcnow() - timedelta(hours=48)
-        unsummarized = db.query(Article).filter(
-            Article.ai_summary == None,
-            Article.published_at >= two_days_ago
-        ).order_by(Article.published_at.desc()).limit(20).all()
 
-        for article in unsummarized:
+        # ① 번역만 먼저 대량 처리 (limit 100)
+        unsummarized = db.query(Article).filter(
+            Article.published_at >= two_days_ago
+        ).order_by(Article.published_at.desc()).limit(100).all()
+
+        for article in untranslated:
             # 영어 제목이면 한국어로 번역
             translated = translate_title(article.title)
             if translated != article.title:
@@ -41,18 +42,24 @@ def collect_all_topics():
                 db.commit()  # ← 번역 즉시 저장
                 print(f"[번역] {translated[:30]}")
             
-            time.sleep(1)  # 번역/요약 상관없이 항상 대기
+            time.sleep(0.5)  # 번역/요약 상관없이 항상 대기
 
-            # AI 요약 생성
-            summary = generate_summary(article.title, article.content or "")
-            if summary:
-                article.ai_summary = summary
-                db.commit()  # ← 요약 즉시 저장
-                print(f"[AI] 요약 생성: {article.title[:30]}")
-            else:
-                print(f"[AI] 요약 실패 (스킵): {article.title[:30]}")
+            # ② 요약 생성 (limit 20, 최신순)
+            unsummarized = db.query(Article).filter(
+                Article.ai_summary == None,
+                Article.published_at >= two_days_ago
+            ).order_by(Article.published_at.desc()).limit(20).all()
+
+            for article in unsummarized:
+                summary = generate_summary(article.title, article.content or "")
+                if summary:
+                    article.ai_summary = summary
+                    db.commit()  # ← 요약 즉시 저장
+                    print(f"[AI] 요약 생성: {article.title[:30]}")
+                else:
+                    print(f"[AI] 요약 실패 (스킵): {article.title[:30]}")
             
-            time.sleep(1)  # 요약 후에도 항상 대기
+                time.sleep(1)  # 요약 후에도 항상 대기
             
         db.commit()
     finally:
