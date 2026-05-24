@@ -30,7 +30,7 @@ def collect_all_topics():
         two_days_ago = datetime.utcnow() - timedelta(hours=48)
 
         # ① 번역만 먼저 대량 처리 (limit 100)
-        unsummarized = db.query(Article).filter(
+        untranslated = db.query(Article).filter(
             Article.published_at >= two_days_ago
         ).order_by(Article.published_at.desc()).limit(100).all()
 
@@ -41,7 +41,6 @@ def collect_all_topics():
                 article.title = translated
                 db.commit()  # ← 번역 즉시 저장
                 print(f"[번역] {translated[:30]}")
-            
             time.sleep(0.5)  # 번역/요약 상관없이 항상 대기
 
             # ② 요약 생성 (limit 20, 최신순)
