@@ -125,7 +125,7 @@ def dispatch_newsletters():
                     "id": article.id,
                     "title": article.title,
                     "insight": insight,
-                    "thumbnail_url": article.thumbnail_url or "",
+                    "thumbnail_url": article.thumbnail_url,
                     "topic": article.topic,
                 })
 
