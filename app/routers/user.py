@@ -95,6 +95,10 @@ def update_preferences(
 
     if body.custom_insight_prompt is not None:
         pref.custom_insight_prompt = body.custom_insight_prompt
+        from app.models.article import UserArticleInsight
+        db.query(UserArticleInsight).filter(
+            UserArticleInsight.user_id == current_user.id
+        ).delete()
 
     # 관심사 변경 시 인사이트 캐시 초기화
     if body.topics is not None or body.sub_topics is not None or body.keywords is not None:
