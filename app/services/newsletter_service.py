@@ -56,7 +56,7 @@ def build_newsletter_html(user_name: str, articles: list) -> str:
     items_html = ""
     for article in articles:
         article_url = f"{FRONTEND_URL}/article/{article['id']}"
-        thumbnail = article.get('thumbnail_url', '')
+        thumbnail = article.get('thumbnail_url') or ''
         topic = article.get('topic', '')
         topic_label = TOPIC_EMOJI.get(topic, '📰 뉴스')
 
