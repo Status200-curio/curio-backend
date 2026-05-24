@@ -38,19 +38,21 @@ def collect_all_topics():
             translated = translate_title(article.title)
             if translated != article.title:
                 article.title = translated
+                db.commit()  # ← 번역 즉시 저장
                 print(f"[번역] {translated[:30]}")
             
-            time.sleep(4)  # 번역/요약 상관없이 항상 대기
+            time.sleep(1)  # 번역/요약 상관없이 항상 대기
 
             # AI 요약 생성
             summary = generate_summary(article.title, article.content or "")
             if summary:
                 article.ai_summary = summary
+                db.commit()  # ← 요약 즉시 저장
                 print(f"[AI] 요약 생성: {article.title[:30]}")
             else:
                 print(f"[AI] 요약 실패 (스킵): {article.title[:30]}")
             
-            time.sleep(4)  # 요약 후에도 항상 대기
+            time.sleep(1)  # 요약 후에도 항상 대기
             
         db.commit()
     finally:

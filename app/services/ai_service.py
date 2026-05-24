@@ -272,7 +272,7 @@ def generate_insight(title: str, content: str, user_topics: list, user_keywords:
 def translate_title(title: str) -> str:
     """영어 제목을 한국어로 번역 — 영어가 아니면 그대로 반환"""
     alpha_count = sum(1 for c in title if c.isascii() and c.isalpha())
-    if len(title) == 0 or alpha_count / len(title) < 0.5:
+    if len(title) == 0 or alpha_count / len(title) < 0.3:
         return title
 
     prompt = f"""다음 영어 제목을 한국어로 자연스럽게 번역해줘.
