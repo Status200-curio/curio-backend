@@ -44,21 +44,21 @@ def collect_all_topics():
             time.sleep(0.5)  # 번역/요약 상관없이 항상 대기
 
             # ② 요약 생성 (limit 20, 최신순)
-            unsummarized = db.query(Article).filter(
-                Article.ai_summary == None,
-                Article.published_at >= two_days_ago
-            ).order_by(Article.published_at.desc()).limit(20).all()
+        unsummarized = db.query(Article).filter(
+            Article.ai_summary == None,
+            Article.published_at >= two_days_ago
+        ).order_by(Article.published_at.desc()).limit(20).all()
 
-            for article in unsummarized:
-                summary = generate_summary(article.title, article.content or "")
-                if summary:
-                    article.ai_summary = summary
-                    db.commit()  # ← 요약 즉시 저장
-                    print(f"[AI] 요약 생성: {article.title[:30]}")
-                else:
-                    print(f"[AI] 요약 실패 (스킵): {article.title[:30]}")
+        for article in unsummarized:
+            summary = generate_summary(article.title, article.content or "")
+            if summary:
+                article.ai_summary = summary
+                db.commit()  # ← 요약 즉시 저장
+                print(f"[AI] 요약 생성: {article.title[:30]}")
+            else:
+                print(f"[AI] 요약 실패 (스킵): {article.title[:30]}")
             
-                time.sleep(1)  # 요약 후에도 항상 대기
+            time.sleep(1)  # 요약 후에도 항상 대기
             
         db.commit()
     finally:
