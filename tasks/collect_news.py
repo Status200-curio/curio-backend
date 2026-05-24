@@ -27,12 +27,11 @@ def collect_all_topics():
             print(f"[NewsAPI] {topic}: {api_saved}개 저장")
 
         # AI 요약 생성 + 영어 제목 번역 (48시간 이내 기사만)
-        seven_days_ago = datetime.utcnow() - timedelta(days=7)
+        two_days_ago = datetime.utcnow() - timedelta(hours=48)
         unsummarized = db.query(Article).filter(
             Article.ai_summary == None,
-            Article.published_at >= seven_days_ago
-        ).order_by(Article.published_at.desc() # ← 최신순 정렬 추가
-        ).limit(20).all()
+            Article.published_at >= two_days_ago
+        ).order_by(Article.published_at.desc()).limit(20).all()
 
         for article in unsummarized:
             # 영어 제목이면 한국어로 번역
