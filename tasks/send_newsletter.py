@@ -126,6 +126,7 @@ def dispatch_newsletters():
                     "title": article.title,
                     "insight": insight,
                     "thumbnail_url": article.thumbnail_url or "",
+                    "topic": article.topic,
                 })
 
             send_newsletter(user.email, user.name, article_dicts)
