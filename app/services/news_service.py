@@ -92,7 +92,6 @@ RSS_FEEDS = {
     "https://www.yna.co.kr/rss/international.xml",
     "https://api.sbs.co.kr/xml/news/rss.jsp?pmDiv=international",
     "https://feeds.bbci.co.uk/news/world/rss.xml",
-    "https://rss.nytimes.com/services/xml/rss/nyt/World.xml",
     "https://www.aljazeera.com/xml/rss/all.xml",
     "https://www.theguardian.com/world/rss",
     "https://www.khan.co.kr/rss/rssdata/kh_world.xml",       # 경향신문
