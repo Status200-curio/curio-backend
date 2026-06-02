@@ -47,7 +47,7 @@ def collect_all_topics():
         unsummarized = db.query(Article).filter(
             Article.ai_summary == None,
             Article.published_at >= two_days_ago
-        ).order_by(Article.published_at.desc()).limit(20).all()
+        ).order_by(Article.published_at.desc()).limit(50).all()
 
         for article in unsummarized:
             summary = generate_summary(article.title, article.content or "")
