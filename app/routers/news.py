@@ -60,6 +60,15 @@ def get_feed(
      # 요약 없는 기사 제외 ← 여기 추가
     query = query.filter(Article.ai_summary != None)
 
+    # ← 여기에 추가!
+    if user_sub_topics:
+        from sqlalchemy import or_
+        from sqlalchemy import cast as sa_cast
+        from sqlalchemy.dialects.postgresql import JSONB
+        query = query.filter(
+            or_(*[sa_cast(Article.tags, JSONB).contains([st]) for st in user_sub_topics])
+    )
+
     # 24시간 이내 읽은 기사 제외
     since_24h = datetime.now(KST) - timedelta(hours=24)
     viewed_24h = db.query(ArticleView.article_id).filter(
